@@ -7,6 +7,13 @@ module reg_file (
 );
     parameter DEPTH = 32;
     reg [31:0] mem [0:31];
-    assign rd1 = 32'd0;
-    assign rd2 = 32'd0;
+
+    assign rd1 = mem[ra1];
+    assign rd2 = mem[ra2];
+
+    always @(posedge clk) begin
+        if (we && wa != 'd0) mem[wa] <= wd;
+        else mem['d0] <= 'd0;
+    end
+
 endmodule

@@ -33,7 +33,7 @@ module alu #(
         SRA:    out = $signed(a) >>> b[4:0];
         SLT:    out = $signed(a) < $signed(b) ? 'd1 : 'd0;
         SLTU:   out = a < b ? 'd1 : 'd0;
-        default: out = b;
+        default: out = b; // Need to only pass b for the lui instruction
       endcase
     end
 

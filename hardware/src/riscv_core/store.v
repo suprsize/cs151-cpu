@@ -4,7 +4,7 @@ module store #(
     input [W_SIZE-1:0] din,
     input [15:0] addr,
     input [2:0] func3,
-    input [6:0] opcode,
+    input we,
     output [W_SIZE-1:0] store_data,
     output [3:0] MemRW4
 );
@@ -23,7 +23,7 @@ module store #(
     assign shifted_data = din >> bytes_to_shift;
 
     assign store_data = func3 == SW_FUNC3? shifted_data : din;    
-    assign MemRW4 = opcode == STORE_OPCODE? mask : 4'd0;
+    assign MemRW4 = we? mask : 4'd0;
 
     always @(*) begin
       case(func3)

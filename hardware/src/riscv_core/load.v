@@ -18,7 +18,7 @@ module load #(
     wire [W_SIZE-1:0] shifted_data;
     wire [4:0] bytes_to_shift;
 
-    assign load_data = opcode == LOAD_OPCODE? out : mem_data;
+    assign load_data = opcode == LOAD_OPCODE? out : mem_data; // Might not be needed to double check if load_data is muxed afterward.
     assign bytes_to_shift = 8 * addr[1:0];
     assign shifted_data = mem_data >> bytes_to_shift;
  

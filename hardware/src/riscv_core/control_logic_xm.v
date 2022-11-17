@@ -2,9 +2,7 @@ module control_logic #(
     parameter W_SIZE = 32
 ) (
     input [W_SIZE-1:0] inst_xm,
-    input BrEq, 
-    input BrLt,
-    output BrUn,
+    output BrSel, // Basically Func3
     output ASel,
     output BSel,
     output MemRW, 

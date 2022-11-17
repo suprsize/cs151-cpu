@@ -2,7 +2,9 @@ module control_logic #(
     parameter W_SIZE = 32
 ) (
     input [W_SIZE-1:0] inst_fd,
-    output InstSel, 
+    input PC_fd, 
+    output InstSel,
+    output JalSpecial,
     output [2:0] ImmSel 
 );
     localparam 

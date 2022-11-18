@@ -17,7 +17,7 @@ module inst_splitter #(
     S_TYPE = 3'd2,
     B_TYPE = 3'd3,
     U_TYPE = 3'd4,
-    J_TYPE = 3'd5;
+    J_TYPE = 3'd5,
     C_TYPE = 3'd6;
 
     localparam

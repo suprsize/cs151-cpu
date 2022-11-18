@@ -1,4 +1,4 @@
-module control_logic #(
+module w_logic #(
     parameter W_SIZE = 32
 ) (
   //TODO: need to add inst_fd as an input in order to cover for jal special case calculate the pcSel.

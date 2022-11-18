@@ -4,7 +4,7 @@ module branch_comp #(
     input [W_SIZE-1:0] a,
     input [W_SIZE-1:0] b,
     input [2:0] BrSel,
-    output BrTaken
+    output Br
 );
     localparam 
     BEQ     = 3'd0,
@@ -21,7 +21,7 @@ module branch_comp #(
     assign BrLt = BrUn? a < b   : $signed(a) < $signed(b);
 
     reg branch;
-    assign BrTaken = branch;
+    assign Br = branch;
     
     always @(*) begin
         case(BrSel)

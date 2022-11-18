@@ -662,7 +662,7 @@
     <wire from="(480,1050)" to="(530,1050)"/>
     <wire from="(480,1370)" to="(690,1370)"/>
     <wire from="(480,880)" to="(480,1050)"/>
-    <wire from="(480,880)" to="(620,880)"/>
+    <wire from="(480,880)" to="(680,880)"/>
     <wire from="(520,1070)" to="(520,1140)"/>
     <wire from="(520,1070)" to="(530,1070)"/>
     <wire from="(550,1080)" to="(550,1680)"/>
@@ -673,21 +673,20 @@
     <wire from="(600,1310)" to="(690,1310)"/>
     <wire from="(600,760)" to="(600,1060)"/>
     <wire from="(600,760)" to="(840,760)"/>
-    <wire from="(620,880)" to="(2120,880)"/>
-    <wire from="(620,880)" to="(620,930)"/>
-    <wire from="(620,930)" to="(680,930)"/>
     <wire from="(650,1010)" to="(650,1100)"/>
     <wire from="(650,1010)" to="(900,1010)"/>
     <wire from="(650,1100)" to="(690,1100)"/>
     <wire from="(650,1330)" to="(690,1330)"/>
     <wire from="(650,1390)" to="(690,1390)"/>
+    <wire from="(660,850)" to="(1690,850)"/>
+    <wire from="(660,850)" to="(660,930)"/>
+    <wire from="(660,930)" to="(680,930)"/>
     <wire from="(670,1020)" to="(670,1080)"/>
     <wire from="(670,1020)" to="(920,1020)"/>
     <wire from="(670,1080)" to="(690,1080)"/>
-    <wire from="(670,850)" to="(1690,850)"/>
-    <wire from="(670,850)" to="(670,910)"/>
-    <wire from="(670,910)" to="(680,910)"/>
     <wire from="(670,970)" to="(680,970)"/>
+    <wire from="(680,880)" to="(2120,880)"/>
+    <wire from="(680,880)" to="(680,910)"/>
     <wire from="(680,970)" to="(680,1680)"/>
     <wire from="(690,1040)" to="(690,1060)"/>
     <wire from="(690,1040)" to="(910,1040)"/>
@@ -1130,15 +1129,15 @@
     </comp>
     <comp lib="0" loc="(250,450)" name="Pin">
       <a name="appearance" val="NewPins"/>
-      <a name="label" val="func3"/>
-    </comp>
-    <comp lib="0" loc="(300,220)" name="Pin">
-      <a name="appearance" val="NewPins"/>
-      <a name="label" val="din"/>
+      <a name="label" val="func3_xm"/>
     </comp>
     <comp lib="0" loc="(300,250)" name="Pin">
       <a name="appearance" val="NewPins"/>
       <a name="label" val="addr"/>
+    </comp>
+    <comp lib="0" loc="(300,270)" name="Pin">
+      <a name="appearance" val="NewPins"/>
+      <a name="label" val="din"/>
     </comp>
     <comp lib="0" loc="(590,310)" name="Pin">
       <a name="appearance" val="NewPins"/>

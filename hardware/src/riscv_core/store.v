@@ -6,6 +6,7 @@ module store #(
     input [2:0] func3,
     input we,
     output [W_SIZE-1:0] store_data,
+    output [13:0] mem_addr,
     output [3:0] MemRW4
 );
     localparam STORE_OPCODE = 7'h23; // 23 in hex
@@ -21,6 +22,7 @@ module store #(
 
     assign bytes_to_shift = 8 * addr[1:0];
     assign shifted_data = din >> bytes_to_shift;
+    assign mem_addr = addr[13:0];
 
     assign store_data = func3 == SW_FUNC3? shifted_data : din;    
     assign MemRW4 = we? mask : 4'd0;

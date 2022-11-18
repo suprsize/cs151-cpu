@@ -20,16 +20,16 @@ module inst_splitter #(
     J_TYPE = 3'd5;
 
     localparam
-    R_OPCODE = 7'h33,
-    I_OPCODE = 7'h13,
-    LOADING_OPCODE = 7'h03,
-    JALR_OPCODE = 7'h67,
-    CSR_OPCODE = 7'h73,
-    S_OPCODE = 7'h23,
-    B_OPCODE = 7'h63,
-    LUI_OPCODE = 7'h37,
-    AUIPC_OPCODE = 7'h17,
-    JAL_OPCODE = 7'h6f;
+    R_OPCODE        = 7'h33,
+    I_OPCODE        = 7'h13,
+    LOADING_OPCODE  = 7'h03,
+    JALR_OPCODE     = 7'h67,
+    CSR_OPCODE      = 7'h73,
+    S_OPCODE        = 7'h23,
+    B_OPCODE        = 7'h63,
+    LUI_OPCODE      = 7'h37,
+    AUIPC_OPCODE    = 7'h17,
+    JAL_OPCODE      = 7'h6f;
 
     reg type;
 
@@ -53,7 +53,7 @@ module inst_splitter #(
         LUI_OPCODE,
         AUIPC_OPCODE: type = U_TYPE;
         JAL_OPCODE: type = J_TYPE;
-        default: type = R_TYPE;
+        default: type = R_TYPE;     // COULD BE A PROBLOM
       endcase
     end
 

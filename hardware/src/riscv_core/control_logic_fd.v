@@ -4,7 +4,6 @@ module control_logic #(
     input [W_SIZE-1:0] inst_fd,
     input PC_fd, 
     output InstSel,
-    output JalSpecial,
     output [2:0] ImmSel 
 );
     localparam 

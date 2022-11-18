@@ -5,7 +5,6 @@ module control_logic #(
     input [W_SIZE-1:0] inst_w,
     input [W_SIZE-1:0] inst_fd,
     input BrTaken,
-    input JalSpecial,
     input BIOSRest,
     output [1:0] PCSel, 
     output Flush,

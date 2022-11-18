@@ -5,9 +5,9 @@ module forward_logic #(
     input [W_SIZE-1:0] inst_xm, 
     input [W_SIZE-1:0] inst_w,
     output AFrwd1, 
-    output AFrwd2, 
     output BFrwd1, 
-    output BFrwd2
+    output BFrwd2,
+    output AFrwd2 
 );
 
     localparam

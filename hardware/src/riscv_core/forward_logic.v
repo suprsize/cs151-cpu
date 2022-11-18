@@ -26,6 +26,7 @@ module forward_logic #(
     wire [6:0] funct7_fd;
     wire [2:0] type_fd;
     inst_splitter fd_split(
+        .inst(inst_fd),
         .opcode(opcode_fd),
         .rd(rd_fd),
         .funct3(funct3_fd),
@@ -41,6 +42,7 @@ module forward_logic #(
     wire [6:0] funct7_xm;
     wire [2:0] type_xm;
     inst_splitter xm_split(
+        .inst(inst_xm),
         .opcode(opcode_xm),
         .rd(rd_xm),
         .funct3(funct3_xm),
@@ -56,6 +58,7 @@ module forward_logic #(
     wire [6:0] funct7_w;
     wire [2:0] type_w;
     inst_splitter w_split(
+        .inst(inst_w),
         .opcode(opcode_w),
         .rd(rd_w),
         .funct3(funct3_w),

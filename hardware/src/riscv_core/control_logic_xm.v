@@ -106,7 +106,7 @@ module xm_logic #(
           UART_ready_to_receive = FALSE;
         end
 
-        I_TYPE: begin
+        I_TYPE: begin     //TODO: NEED TO CHANGE BKZ CSR IS NOW A SPERATE TYPE.
           br_sel = 'd0; //xx
           branch_taken = FALSE;
           a_sel = RS1_A;
@@ -115,7 +115,7 @@ module xm_logic #(
           mem_rw = FALSE;
           imem_rw = FALSE;
           UART_write_valid = FALSE;
-          UART_ready_to_receive = FALSE;
+          UART_ready_to_receive = FALSE;    
         end
 
         S_TYPE: begin

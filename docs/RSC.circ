@@ -281,10 +281,6 @@
       <a name="facing" val="north"/>
       <a name="label" val="BrTaken"/>
     </comp>
-    <comp lib="0" loc="(580,1000)" name="Tunnel">
-      <a name="facing" val="north"/>
-      <a name="label" val="BrTaken_xm"/>
-    </comp>
     <comp lib="0" loc="(650,1330)" name="Ground"/>
     <comp lib="0" loc="(650,1390)" name="Ground"/>
     <comp lib="0" loc="(670,970)" name="Pin">
@@ -412,6 +408,9 @@
     <comp lib="8" loc="(1290,640)" name="Text">
       <a name="text" val="IF CSRW || CSRWI"/>
     </comp>
+    <comp lib="8" loc="(178,1044)" name="Text">
+      <a name="text" val="jal &amp; branch predict taken"/>
+    </comp>
     <comp lib="8" loc="(2655,1315)" name="Text">
       <a name="text" val="ALSO NEED TO MAKE SURE IT IS LOAD/STORE"/>
     </comp>
@@ -430,8 +429,8 @@
     <comp lib="8" loc="(420,940)" name="Text">
       <a name="text" val="alu_w"/>
     </comp>
-    <comp lib="8" loc="(430,1110)" name="Text">
-      <a name="text" val="jal &amp; branch predict taken"/>
+    <comp lib="8" loc="(500,1090)" name="Text">
+      <a name="text" val="RESET MIGHT NOT WORK IF TWO MANY BRANCHS"/>
     </comp>
     <comp lib="8" loc="(548,944)" name="Text">
       <a name="text" val="alu_xm"/>

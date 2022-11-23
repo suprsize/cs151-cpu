@@ -104,7 +104,6 @@ module w_logic #(
       if (BIOSRest)               pc_sel = BIOS_REST_P;
       else if (is_jal_special)    pc_sel = JAL_SPECIAL_P;
       else if (is_jalr)           pc_sel = ALU_OUTPUT_P;
-      else if (type_w == B_TYPE)  pc_sel = BrTaken; // 0 pc+4 , 1 alu output
       else                        pc_sel = PC_PLUS_4_P;
     end
 
@@ -134,6 +133,7 @@ module w_logic #(
     always @(*) begin
       case(opcode_w) 
         LOADING_OPCODE: write_back_sel = load_result;
+        JAL_OPCODE,
         JALR_OPCODE:    write_back_sel = PC_PLUS_4_W;
         default:        write_back_sel = ALU_OUTPUT_W;
       endcase         

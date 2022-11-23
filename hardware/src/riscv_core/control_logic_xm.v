@@ -13,7 +13,8 @@ module xm_logic #(
     output MemRW, 
     output IMemWE,
     output UART_Write_valid,
-    output UART_Ready_To_Receive
+    output UART_Ready_To_Receive,
+    output ResetCounters
 );
 
     localparam
@@ -23,7 +24,8 @@ module xm_logic #(
     B_TYPE = 3'd3,
     U_TYPE = 3'd4,
     J_TYPE = 3'd5,
-    C_TYPE = 3'd6,
+    C_TYPE = 3'd6;
+    localparam
     ADD = 4'b0_000,
     SUB = 4'b1_000,
     AND = 4'b0_111,
@@ -33,13 +35,18 @@ module xm_logic #(
     SRL = 4'b0_101,
     SRA = 4'b1_101,
     SLT = 4'b0_010,
-    SLTU= 4'b0_011,
-    UART_TRANSMITTER_ADDR = 32'h80000008,
-    AUIPC_OPCODE    = 7'h17,
+    SLTU= 4'b0_011;
+    localparam
+    UART_TRANSMITTER_ADDR     = 32'h80000008,
+    UART_COUNTERS_RESET_ADDR  = 32'h80000018;
+    localparam
+    AUIPC_OPCODE    = 7'h17;
+    localparam
     RS1_A   = 1'd0,
     RS2_B   = 1'd0,
     PC_XM_A = 1'd1,
-    IMM_B   = 1'd1,
+    IMM_B   = 1'd1;
+    localparam
     FALSE = 1'd0,
     TRUE = 1'd1;
 
@@ -79,6 +86,7 @@ module xm_logic #(
     assign ALUSel = alu_sel;
     assign UART_Write_valid = UART_write_valid;
     assign UART_Ready_To_Receive = UART_ready_to_receive;
+    assign ResetCounters = type_xm == S_TYPE && Addr == UART_COUNTERS_RESET_ADDR;
     
     wire is_srai = type_xm == I_TYPE && SRA == {funct7_xm[5], funct3_xm};
     wire BIOS_mode = PC_XM[30];

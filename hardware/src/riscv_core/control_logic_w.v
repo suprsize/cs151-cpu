@@ -1,9 +1,9 @@
 module w_logic #(
     parameter W_SIZE = 32
 ) (
-  //TODO: need to add inst_fd as an input in order to cover for jal special case calculate the pcSel.
     input [W_SIZE-1:0] inst_w,
-    input [W_SIZE-1:0] inst_fd,
+    input [W_SIZE-1:0] inst_fd, // Need to add inst_fd as an input in order to cover for jal special case calculate the pcSel.
+    input [W_SIZE-1:0] Addr,  //ALU result
     input BrTaken,
     input BIOSRest,
     output Flush,
@@ -11,9 +11,8 @@ module w_logic #(
     output RegWEn, 
     output CSRWen,
     output CSRSel,
-    output [2:0] WBSel,
-    output ResetCounters
-);
+    output [2:0] WBSel
+    );
 
 
     localparam
@@ -39,11 +38,17 @@ module w_logic #(
     PC_PLUS_4_W     = 3'd0,
     ALU_OUTPUT_W    = 3'd1,
     DMEM_W          = 3'd2,
-    UART_W          = 3'd3,
-    UART_SIGS_W     = 3'd4,
+    UART_RECEIVER_W = 3'd3,
+    UART_CONTROL_W  = 3'd4,
     BIOS_W          = 3'd5,
     CYC_COUNTER_W   = 3'd6,
     INST_COUNTER_W  = 3'd7;
+
+    localparam
+    UART_CONTROL_ADDR   = 32'h80000000,
+    UART_RECEIVER_ADDR  = 32'h80000004,
+    CYCLE_COUNTER_ADDR  = 32'h80000010,
+    INST_COUNTER_ADDR   = 32'h80000014;
 
     localparam
     I_OPCODE        = 7'h13,
@@ -75,85 +80,63 @@ module w_logic #(
 
     reg [1:0] pc_sel;
     reg reg_write_enable;
-    reg csr_write_enable;
-    reg csr_sel;
     reg [2:0] write_back_sel;
-    reg reset_counters;
+    reg [2:0] load_result;      
 
 
-    wire opcode_w = inst_w[6:0];
-    wire is_jal =  opcode_w == JAL_OPCODE;
-    wire is_load = opcode_w == LOADING_OPCODE;
-    wire is_imm = opcode_w == I_OPCODE;
+
+    wire opcode_fd = inst_fd[6:0];
+    wire is_jal_special =  opcode_fd == JAL_OPCODE;
     wire is_jalr = opcode_w == JALR_OPCODE;
-    wire is_csr = opcode_w == CSR_OPCODE;
-    wire is_csr_imm = is_csr && funct3_w == CSRWI_FUNC3;
+    wire is_bios_addr = Addr[31:28] == 4'b0100;
 
-    wire load_result = ALU; // SHOULD BE THE RESULT OF EITHER DMEM, BIOS, UART
-
-    assign Flush = BrTaken;
-    assign CSRSel = is_csr_imm;   // 0->RS1 AND 1->IMM
-    assign CSRWen = is_csr;  //NEEDS TO COVER CSR TO MAKE SURE IT IS THE CORRECT ADDRESS
 
     assign PCSel  = pc_sel;
     assign RegWEn = reg_write_enable;
-    assign WBSel = write_back_sel;
-    assign ResetCounters = reset_counters;
+    assign WBSel  = write_back_sel;
 
+    assign Flush  = BrTaken;
+    assign CSRSel = funct3_w == CSRWI_FUNC3;     // 0->RS1 AND 1->IMM
+    assign CSRWen = opcode_w == CSR_OPCODE;      // NEEDS TO COVER CSR TO MAKE SURE IT IS THE CORRECT ADDRESS
 
-   
 
     always @(*) begin
-      case(type_xm) 
-        R_TYPE: begin
-          pc_sel = PC_PLUS_4_P;
-          reg_write_enable = TRUE;
-          write_back_sel = ALU_OUTPUT_W;
-          reset_counters = FALSE;
-        end
+      if (BIOSRest)               pc_sel = BIOS_REST_P;
+      else if (is_jal_special)    pc_sel = JAL_SPECIAL_P;
+      else if (is_jalr)           pc_sel = ALU_OUTPUT_P;
+      else if (type_w == B_TYPE)  pc_sel = BrTaken; // 0 pc+4 , 1 alu output
+      else                        pc_sel = PC_PLUS_4_P;
+    end
 
-        I_TYPE: begin
-          pc_sel = PC_PLUS_4_P;
-          reg_write_enable = !csr_write_enable;
-          if (is_imm) write_back_sel = ALU_OUTPUT_W;
-          else if (is_load) write_back_sel = load_result; // load_result needs to be correct
-          else write_back_sel = PC_PLUS_4_W;  // Covers JALR case.
-
-          reset_counters = FALSE;     //NEEDS TO COVER THIS TOO
-        end
-
-        S_TYPE: begin
-          pc_sel = PC_PLUS_4_P;
-          reg_write_enable = FALSE;
-          write_back_sel = PC_PLUS_4_W;
-          reset_counters = FALSE;     //NEEDS TO COVER THIS TOO
-        end
-
-        B_TYPE: begin
-          pc_sel = BrTaken;
-          reg_write_enable = FALSE;
-          write_back_sel = 'd0;
-          reset_counters = FALSE;
-        end
-
-        U_TYPE: begin
-          pc_sel = PC_PLUS_4_P;
-          reg_write_enable = TRUE;
-          write_back_sel = ALU_OUTPUT_W;
-          reset_counters = FALSE;     //NEEDS TO COVER THIS TOO
-        end
-
-        
-        default: begin
-          pc_sel = ALU_OUTPUT_P;
-          reg_write_enable = TRUE;
-          write_back_sel = PC_PLUS_4_W;
-          reset_counters = FALSE;     //NEEDS TO COVER THIS TOO
-        end
-
+    always @(*) begin
+      case(type_w) 
+      R_TYPE,
+      U_TYPE,
+      J_TYPE,  
+      I_TYPE:  reg_write_enable = TRUE; // TODO: I_TYPE DOESN'T NEED TO DEPEND ON CSR IF C_TYPE IS SEPARATED.
+      default: reg_write_enable = FALSE;  // S and B types are covered
       endcase
     end
 
+    always @(*) begin
+      case (Addr)
+        UART_CONTROL_ADDR:  load_result = UART_CONTROL_W;
+        UART_RECEIVER_ADDR: load_result = UART_RECEIVER_W;
+        CYCLE_COUNTER_ADDR: load_result = CYC_COUNTER_W;
+        INST_COUNTER_ADDR:  load_result = INST_COUNTER_W;
+        default: begin
+          if (is_bios_addr) load_result = BIOS_W;
+          else load_result = DMEM_W;
+        end
+      endcase
+    end
 
+    always @(*) begin
+      case(opcode_w) 
+        LOADING_OPCODE: write_back_sel = load_result;
+        JALR_OPCODE:    write_back_sel = PC_PLUS_4_W;
+        default:        write_back_sel = ALU_OUTPUT_W;
+      endcase         
+    end
 
 endmodule

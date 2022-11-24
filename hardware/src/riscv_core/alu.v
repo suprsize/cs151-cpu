@@ -16,7 +16,9 @@ module alu #(
     SRL = 4'b0_101,
     SRA = 4'b1_101,
     SLT = 4'b0_010,
-    SLTU= 4'b0_011;
+    SLTU= 4'b0_011,
+    A   = 4'b1_111,
+    B   = 4'b1_110;
 
     reg [W_SIZE-1:0] out;
     assign result = out;
@@ -33,6 +35,7 @@ module alu #(
         SRA:    out = $signed(a) >>> b[4:0];
         SLT:    out = $signed(a) < $signed(b) ? 'd1 : 'd0;
         SLTU:   out = a < b ? 'd1 : 'd0;
+        A:      out = a;
         default: out = b; // Need to only pass b for the lui instruction
       endcase
     end

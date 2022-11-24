@@ -2,14 +2,14 @@ module xm_logic #(
     parameter W_SIZE = 32
 ) (
     input [W_SIZE-1:0] inst_xm,
-    input Br,
     input [W_SIZE-1:0] Addr,  //ALU result
     input [W_SIZE-1:0] PC_XM, 
-    output [2:0] BrSel,       // Func3 of PC_XM
-    output BrTaken,
+    input Br,
     output ASel,
     output BSel,
     output [3:0] ALUSel,
+    output [2:0] BrSel,       // Func3 of inst_xm
+    output BrTaken,
     output MemRW, 
     output IMemWE,
     output UART_Write_valid,
@@ -35,11 +35,15 @@ module xm_logic #(
     SRL = 4'b0_101,
     SRA = 4'b1_101,
     SLT = 4'b0_010,
-    SLTU= 4'b0_011;
+    SLTU= 4'b0_011,
+    A   = 4'b1_111,
+    B   = 4'b1_110;
     localparam
     UART_TRANSMITTER_ADDR     = 32'h80000008,
-    UART_COUNTERS_RESET_ADDR  = 32'h80000018;
+    UART_COUNTERS_RESET_ADDR  = 32'h80000018,
+    UART_RECEIVER_ADDR        = 32'h80000004;
     localparam
+    LOADING_OPCODE  = 7'h03,
     AUIPC_OPCODE    = 7'h17;
     localparam
     RS1_A   = 1'd0,
@@ -49,7 +53,8 @@ module xm_logic #(
     localparam
     FALSE = 1'd0,
     TRUE = 1'd1;
-
+    localparam
+    CSRWI_FUNC3     = 3'h5;
     
 
     wire [6:0] opcode_xm; 
@@ -67,26 +72,23 @@ module xm_logic #(
         .funct7(funct7_xm),
         .inst_type(type_xm)
     );
-    reg [2:0] br_sel;
-    reg branch_taken;
+
     reg a_sel;
     reg b_sel;
     reg [3:0] alu_sel;
-    reg mem_rw;
-    reg imem_rw;
-    reg UART_write_valid;
-    reg UART_ready_to_receive;
-
-    assign BrSel =  br_sel;
-    assign BrTaken = branch_taken;
     assign ASel = a_sel;
     assign BSel = b_sel;
-    assign MemRW = mem_rw;
-    assign IMemWE = imem_rw;
     assign ALUSel = alu_sel;
-    assign UART_Write_valid = UART_write_valid;
-    assign UART_Ready_To_Receive = UART_ready_to_receive;
-    assign ResetCounters = type_xm == S_TYPE && Addr == UART_COUNTERS_RESET_ADDR;
+
+
+    assign BrSel                  = funct3_xm;
+    assign BrTaken                = type_xm == B_TYPE? Br : FALSE;
+    assign MemRW                  = type_xm == S_TYPE ? Addr[31:30] == 2'd00 && Addr[28]     : FALSE;
+    assign IMemWE                 = type_xm == S_TYPE ? BIOS_mode && Addr[31:29] == 3'b001   : FALSE;
+    assign UART_Write_valid       = type_xm == S_TYPE ? Addr == UART_TRANSMITTER_ADDR        : FALSE;
+    assign UART_Ready_To_Receive  = opcode_xm == LOADING_OPCODE ? Addr == UART_RECEIVER_ADDR : FALSE;
+    assign ResetCounters          = type_xm == S_TYPE && Addr == UART_COUNTERS_RESET_ADDR;
+
     
     wire is_srai = type_xm == I_TYPE && SRA == {funct7_xm[5], funct3_xm};
     wire BIOS_mode = PC_XM[30];
@@ -95,79 +97,46 @@ module xm_logic #(
     always @(*) begin
       case(type_xm) 
         R_TYPE: begin
-          br_sel = 'd0; //xx
-          branch_taken = FALSE;
           a_sel = RS1_A;
           b_sel = RS2_B;
           alu_sel = {funct7_xm[5], funct3_xm};
-          mem_rw = FALSE;
-          imem_rw = FALSE;
-          UART_write_valid = FALSE;
-          UART_ready_to_receive = FALSE;
         end
 
-        I_TYPE: begin     //TODO: NEED TO CHANGE BKZ CSR IS NOW A SPERATE TYPE.
-          br_sel = 'd0; //xx
-          branch_taken = FALSE;
+        I_TYPE: begin     
           a_sel = RS1_A;
           b_sel = IMM_B;
-          alu_sel = {is_srai? 1'd1 : 1'd0, funct3_xm};
-          mem_rw = FALSE;
-          imem_rw = FALSE;
-          UART_write_valid = FALSE;
-          UART_ready_to_receive = FALSE;    
+          alu_sel = {is_srai? 1'd1 : 1'd0, funct3_xm};  
         end
 
         S_TYPE: begin
-          br_sel = 'd0; //xx
-          branch_taken = FALSE;
           a_sel = RS1_A;
           b_sel = IMM_B;
           alu_sel = ADD;
-          //TODO: NEED TO MAKE SURE I SELECT THE CORRECT MEMEORY AND HANDSHAKE
-          mem_rw = Addr[31:30] == 2'd00 && Addr[28];
-          imem_rw = BIOS_mode && Addr[31:29] == 3'b001;
-          UART_write_valid = Addr == UART_TRANSMITTER_ADDR;
-          UART_ready_to_receive = FALSE;
         end
 
         B_TYPE: begin
-          br_sel = funct3_xm;
-          branch_taken = Br;
           a_sel = PC_XM_A;
           b_sel = IMM_B;
           alu_sel = ADD;
-          mem_rw = FALSE;
-          imem_rw = FALSE;
-          UART_write_valid = FALSE;
-          UART_ready_to_receive = FALSE;
         end
 
         U_TYPE: begin
-          br_sel = 'd0; //xx
-          branch_taken = FALSE;
-          a_sel = opcode_xm == AUIPC_OPCODE;
+          a_sel = PC_XM_A; 
           b_sel = IMM_B;
-          alu_sel = ADD;
-          mem_rw = FALSE;
-          imem_rw = FALSE;
-          UART_write_valid = FALSE;
-          UART_ready_to_receive = FALSE;
+          alu_sel = opcode_xm == AUIPC_OPCODE? ADD : B;
         end
 
-        
-        default: begin
-          br_sel = 'd0; //xx
-          branch_taken = FALSE;
+        C_TYPE: begin
+          a_sel = RS1_A;
+          b_sel = IMM_B;
+          alu_sel = funct3_xm == CSRWI_FUNC3? B : A;
+        end
+
+        default: begin // jal is already covered by special case of jal. not really needed.
           a_sel = PC_XM_A;
-          b_sel = IMM_B;
+          b_sel = IMM_B; 
           alu_sel = ADD;
-          mem_rw = FALSE;
-          imem_rw = FALSE;
-          UART_write_valid = FALSE;
-          UART_ready_to_receive = FALSE;
         end
-
       endcase
     end
 

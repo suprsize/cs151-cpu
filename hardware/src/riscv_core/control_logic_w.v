@@ -10,7 +10,6 @@ module w_logic #(
     output [1:0] PCSel, 
     output RegWEn, 
     output CSRWen,
-    output CSRSel,
     output [2:0] WBSel
     );
 
@@ -90,7 +89,6 @@ module w_logic #(
     assign WBSel  = write_back_sel;
 
     assign Flush  = BrTaken;
-    assign CSRSel = funct3_w == CSRWI_FUNC3;     // 0->RS1 AND 1->IMM
     assign CSRWen = opcode_w == CSR_OPCODE;      // NEEDS TO COVER CSR TO MAKE SURE IT IS THE CORRECT ADDRESS
 
 

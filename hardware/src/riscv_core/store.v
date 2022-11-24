@@ -20,11 +20,11 @@ module store #(
     wire [W_SIZE-1:0] shifted_data;
     wire [4:0] bytes_to_shift;
 
-    assign bytes_to_shift = 8 * addr[1:0];
+    assign bytes_to_shift = {addr[1:0], 3'd0};
     assign shifted_data = din >> bytes_to_shift;
-    assign mem_addr = addr[13:0];
+    assign mem_addr = addr[15:2];
 
-    assign store_data = func3 == SW_FUNC3? shifted_data : din;    
+    assign store_data = func3 == SW_FUNC3? din : shifted_data;    
     assign MemRW4 = we? mask : 4'd0;
 
     always @(*) begin

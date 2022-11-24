@@ -43,7 +43,7 @@ module xm_logic #(
     UART_COUNTERS_RESET_ADDR  = 32'h80000018,
     UART_RECEIVER_ADDR        = 32'h80000004;
     localparam
-    LOADING_OPCODE  = 7'h03,
+    LOAD_OPCODE  = 7'h03,
     AUIPC_OPCODE    = 7'h17;
     localparam
     RS1_A   = 1'd0,
@@ -85,7 +85,7 @@ module xm_logic #(
     assign MemRW                  = type_xm == S_TYPE ? Addr[31:30] == 2'd00 && Addr[28]     : FALSE;
     assign IMemWE                 = type_xm == S_TYPE ? BIOS_mode && Addr[31:29] == 3'b001   : FALSE;
     assign UART_Write_valid       = type_xm == S_TYPE ? Addr == UART_TRANSMITTER_ADDR        : FALSE;
-    assign UART_Ready_To_Receive  = opcode_xm == LOADING_OPCODE ? Addr == UART_RECEIVER_ADDR : FALSE;
+    assign UART_Ready_To_Receive  = opcode_xm == LOAD_OPCODE ? Addr == UART_RECEIVER_ADDR : FALSE;
     assign ResetCounters          = type_xm == S_TYPE && Addr == UART_COUNTERS_RESET_ADDR;
     
     wire is_srai = type_xm == I_TYPE && SRA == {funct7_xm[5], funct3_xm};

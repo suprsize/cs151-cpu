@@ -23,7 +23,7 @@ module inst_splitter #(
     localparam
     R_OPCODE        = 7'h33,
     I_OPCODE        = 7'h13,
-    LOADING_OPCODE  = 7'h03,
+    LOAD_OPCODE     = 7'h03,
     JALR_OPCODE     = 7'h67,
     CSR_OPCODE      = 7'h73,
     S_OPCODE        = 7'h23,
@@ -45,7 +45,7 @@ module inst_splitter #(
     always @(*) begin
       case(opcode)
         R_OPCODE: type = R_TYPE;
-        LOADING_OPCODE,
+        LOAD_OPCODE,
         JALR_OPCODE,
         I_OPCODE: type = I_TYPE;
         S_OPCODE: type = S_TYPE;

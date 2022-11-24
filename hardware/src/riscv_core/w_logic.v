@@ -51,7 +51,7 @@ module w_logic #(
 
     localparam
     I_OPCODE        = 7'h13,
-    LOADING_OPCODE  = 7'h03,
+    LOAD_OPCODE     = 7'h03,
     JALR_OPCODE     = 7'h67,
     CSR_OPCODE      = 7'h73,
     JAL_OPCODE      = 7'h6f;
@@ -124,7 +124,7 @@ module w_logic #(
 
     always @(*) begin
       case(opcode_w) 
-        LOADING_OPCODE: write_back_sel = load_result;
+        LOAD_OPCODE: write_back_sel = load_result;
         JAL_OPCODE,
         JALR_OPCODE:    write_back_sel = PC_PLUS_4_W;
         default:        write_back_sel = ALU_OUTPUT_W;

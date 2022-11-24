@@ -80,7 +80,6 @@ module xm_logic #(
     assign BSel = b_sel;
     assign ALUSel = alu_sel;
 
-
     assign BrSel                  = funct3_xm;
     assign BrTaken                = type_xm == B_TYPE? Br : FALSE;
     assign MemRW                  = type_xm == S_TYPE ? Addr[31:30] == 2'd00 && Addr[28]     : FALSE;
@@ -88,11 +87,9 @@ module xm_logic #(
     assign UART_Write_valid       = type_xm == S_TYPE ? Addr == UART_TRANSMITTER_ADDR        : FALSE;
     assign UART_Ready_To_Receive  = opcode_xm == LOADING_OPCODE ? Addr == UART_RECEIVER_ADDR : FALSE;
     assign ResetCounters          = type_xm == S_TYPE && Addr == UART_COUNTERS_RESET_ADDR;
-
     
     wire is_srai = type_xm == I_TYPE && SRA == {funct7_xm[5], funct3_xm};
     wire BIOS_mode = PC_XM[30];
-   
 
     always @(*) begin
       case(type_xm) 
@@ -105,7 +102,7 @@ module xm_logic #(
         I_TYPE: begin     
           a_sel = RS1_A;
           b_sel = IMM_B;
-          alu_sel = {is_srai? 1'd1 : 1'd0, funct3_xm};  
+          alu_sel = {is_srai, funct3_xm};  
         end
 
         S_TYPE: begin

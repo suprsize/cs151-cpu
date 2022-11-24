@@ -68,7 +68,7 @@ module forward_logic #(
     );
 
     wire write_back;
-    assign write_back = type_w != S_TYPE && type_w != B_TYPE && rd_w != 'd0;
+    assign write_back = type_w != S_TYPE && type_w != B_TYPE && rd_w != 'd0;  //NEED TO MAKE SURE WRITE_BACK ALSO WORKS FOR CSR
 
     reg a_forward_1, b_forward_1, a_forward_2, b_forward_2;
     assign AFrwd1 = a_forward_1;

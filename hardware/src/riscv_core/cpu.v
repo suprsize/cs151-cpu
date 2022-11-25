@@ -107,4 +107,147 @@ module cpu #(
     // TODO: Your code to implement a fully functioning RISC-V core
     // Add as many modules as you want
     // Feel free to move the memory modules around
+
+    wire [31:0] alu_a, alu_b;
+    wire [3:0] ALUSel;
+    wire [31:0] alu_result;
+    alu alu (
+      .a(alu_a),
+      .b(alu_b),
+      .ALUSel(ALUSel),
+      .result(alu_result)
+    );
+
+    wire [31:0] imm_inst;
+    wire [2:0] ImmSel;
+    wire [31:0] imm_result;
+    imm_gen imm_gen (
+      .inst(imm_inst),
+      .ImmSel(ImmSel),
+      .imm(imm_result)
+    );
+
+    wire [31:0] branch_a, branch_b;
+    wire [2:0] BrSel;
+    wire branch_result;
+    branch_comp branch_comp (
+      .a(branch_a),
+      .b(branch_b),
+      .BrSel(BrSel),
+      .Br(branch_result)
+    );
+
+    wire [31:0] imem_store_din;
+    wire [15:0] imem_store_addr;
+    wire [2:0] imem_store_func3;
+    wire ImemWe;
+    wire [31:0] imem_din;
+    wire [13:0] imem_addr;
+    wire [3:0] ImemRw4;
+    store imem_store (
+      .din(imem_store_din),
+      .addr(imem_store_addr),
+      .func3(imem_store_func3),
+      .we(ImemWe),
+      .store_data(imem_din),
+      .mem_addr(imem_addr),
+      MemRW4(ImemRw4)
+    );
+
+    wire [31:0] mem_store_din;
+    wire [15:0] mem_store_addr;
+    wire [2:0] mem_store_func3;
+    wire MemWe;
+    wire [31:0] mem_din;
+    wire [13:0] mem_addr;
+    wire [3:0] MemRw4;
+    store mem_store (
+      .din(mem_store_din),
+      .addr(mem_store_addr),
+      .func3(mem_store_func3),
+      .we(MemWe),
+      .store_data(mem_din),
+      .mem_addr(mem_addr),
+      MemRW4(MemRw4)
+    );
+
+    wire [31:0] load_din;
+    wire [15:0] load_addr;
+    wire [2:0] load_func3;
+    wire [31:0] load_result;
+    load load (
+      .mem_data(load_din),
+      .addr(load_addr),
+      .func3(load_func3),
+      .load_data(load_result)
+    );
+
+    wire [31:0] frwd_inst_fd;
+    wire [31:0] frwd_inst_xm;
+    wire [31:0] frwd_inst_w;
+    wire AFrwd1;
+    wire BFrwd1;
+    wire AFrwd2;
+    wire BFrwd2;
+    forward_logic frwd_logic (
+      .inst_fd(frwd_inst_fd),
+      .inst_xm(frwd_inst_xm),
+      .inst_w(frwd_inst_w),
+      .AFrwd1(AFrwd1),
+      .BFrwd1(BFrwd1),
+      .AFrwd2(AFrwd2),
+      .BFrwd2(BFrwd2)
+    );
+
+    wire [31:0] fd_logic_inst_fd;
+    wire [31:0] fd_logic_pc_fd;
+    wire InstSel;
+    wire [2:0] ImmSel;
+    fd_logic fd_logic (
+      .inst_fd(fd_logic_inst_fd),
+      .PC_fd(fd_logic_pc_fd),
+      .InstSel(InstSel),
+      .ImmSel(ImmSel)
+    );
+
+    wire [31:0] xm_logic_inst_xm;
+    wire [31:0] xm_logic_addr;
+    wire [31:0] xm_logic_pc_xm;
+    wire xm_logic_branch_result;
+    wire ASel;
+    wire BSel;
+    wire [3:0] ALUSel;
+    wire [2:0] BrSel;       
+    wire BrTaken;
+    wire MemRW; 
+    wire IMemWE;
+    wire UART_Write_valid;
+    wire UART_Ready_To_Receive;
+    wire ResetCounter;
+    xm_logic xm_logic (
+      .inst_xm(xm_logic_inst_xm),
+      .Addr(xm_logic_addr),
+      .PC_XM(xm_logic_pc_xm),
+      .Br(xm_logic_branch_result),
+      .ASel(ASel),
+      .BSel(BSel),
+      .ALUSel(ALUSel),
+      .BrSel(BrSel),       
+      .BrTaken(BrTaken),
+      .MemRW(MemRW),
+      .IMemWE(IMemWE),
+      .UART_Write_valid(UART_Write_valid),
+      .UART_Ready_To_Receive(UART_Ready_To_Receive),
+      .ResetCounter(ResetCounter)
+    );
+
+
+
+
+
+  
+
+
+
+
 endmodule

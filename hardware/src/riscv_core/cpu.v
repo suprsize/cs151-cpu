@@ -270,11 +270,11 @@ module cpu #(
       .ResetCounter(ResetCounter)
     );
 
-    wire [31:0] w_logic_inst_w;
-    wire [31:0] w_logic_inst_fd;
-    wire [31:0] w_logic_addr;
-    wire w_logic_BrTaken;
-    wire w_logic_BIOSRest;
+    wire [31:0] w_logic_inst_w = inst_w;
+    wire [31:0] w_logic_inst_fd = inst_fd;
+    wire [31:0] w_logic_addr = alu_result_w;
+    wire w_logic_BrTaken = BrTaken_w;
+    wire w_logic_BIOSRest = rst;
     wire Flush;
     wire [1:0] PCSel;
     wire RegWEn;

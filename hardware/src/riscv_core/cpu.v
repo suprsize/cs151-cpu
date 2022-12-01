@@ -37,7 +37,8 @@ module cpu #(
     wire [11:0] bios_addra = pc_wire_2[13:2];
     wire [11:0] bios_addrb = alu_result[13:2];
     wire [31:0] bios_douta, bios_doutb;
-    wire bios_ena, bios_enb;
+    wire bios_ena = 'd1; //todo, don't know
+    wire bios_enb = 'd1;
     bios_mem bios_mem (
       .clk(clk),
       .ena(bios_ena),
@@ -56,7 +57,7 @@ module cpu #(
     wire [31:0] dmem_din = mem_store_dout;
     wire [31:0] dmem_dout;
     wire [3:0] dmem_we = MemRW4;
-    wire dmem_en; //TODO
+    wire dmem_en = 'd1;
     dmem dmem (
       .clk(clk),
       .en(dmem_en),
@@ -130,7 +131,7 @@ module cpu #(
         .data_in_ready(uart_tx_data_in_ready)
     );
 
-    reg [31:0] tohost_csr = 0; //TODO
+    reg [31:0] tohost_csr = csr_51e; //TODO
 
     // TODO: Your code to implement a fully functioning RISC-V core
     // Add as many modules as you want

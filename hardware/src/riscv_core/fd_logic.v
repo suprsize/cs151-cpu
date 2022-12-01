@@ -8,7 +8,8 @@ module fd_logic #(
 );
 
     assign InstSel = PC_fd[30]; 
-    assign ImmSel = inst_type;
+    assign ImmSel = type_fd;
+    
     wire [6:0] opcode_fd; 
     wire [4:0] rd_fd;
     wire [2:0] func3_fd;

@@ -7,12 +7,12 @@ module branch_comp #(
     output Br
 );
     localparam 
-    BEQ     = 3'd0,
-    BNE     = 3'd3,
-    BLT     = 3'd4,
-    BLTU    = 3'd6,
-    BGE     = 3'd5,
-    BGEU    = 3'd7;
+    BEQ  = 3'b000,
+    BNE  = 3'b001,
+    BLT  = 3'b100,
+    BGE  = 3'b101,
+    BLTU = 3'b110,
+    BGEU = 3'b111;
 
 
     wire BrUn, BrEq, BrLt;

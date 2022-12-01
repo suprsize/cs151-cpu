@@ -14,7 +14,7 @@ module cpu #(
     ALU_OUTPUT_P    = 2'd1,
     JAL_SPECIAL_P   = 2'd2,
     BIOS_REST_P     = 2'd3;
-    localparam NOP = 32'h0;
+    localparam NOP = 32'h0; //TODO MIGHT need to be different
     localparam
     RS1_A   = 1'd0,
     RS2_B   = 1'd0,
@@ -34,8 +34,8 @@ module cpu #(
     // BIOS Memory
     // Synchronous read: read takes one cycle
     // Synchronous write: write takes one cycle
-    wire [11:0] bios_addra = pc_wire_2[13:2];
-    wire [11:0] bios_addrb = alu_result[13:2];
+    wire [11:0] bios_addra;
+    wire [11:0] bios_addrb;
     wire [31:0] bios_douta, bios_doutb;
     wire bios_ena = 'd1; //todo, don't know
     wire bios_enb = 'd1;
@@ -53,10 +53,10 @@ module cpu #(
     // Synchronous read: read takes one cycle
     // Synchronous write: write takes one cycle
     // Write-byte-enable: select which of the four bytes to write
-    wire [13:0] dmem_addr = mem_store_addr_out;
-    wire [31:0] dmem_din = mem_store_dout;
+    wire [13:0] dmem_addr;
+    wire [31:0] dmem_din;
     wire [31:0] dmem_dout;
-    wire [3:0] dmem_we = MemRw4;
+    wire [3:0] dmem_we;
     wire dmem_en = 'd1;
     dmem dmem (
       .clk(clk),
@@ -71,12 +71,12 @@ module cpu #(
     // Synchronous read: read takes one cycle
     // Synchronous write: write takes one cycle
     // Write-byte-enable: select which of the four bytes to write
-    wire [31:0] imem_dina = imem_store_dout;
+    wire [31:0] imem_dina;
     wire [31:0] imem_doutb;
-    wire [13:0] imem_addra = imem_store_addr_out; 
-    wire [13:0] imem_addrb = pc_wire_2[15:2];
-    wire [3:0] imem_wea = ImemRw4;
-    wire imem_ena = pc_xm[30]; //TODO: I don't know about this
+    wire [13:0] imem_addra; 
+    wire [13:0] imem_addrb;
+    wire [3:0] imem_wea;
+    wire imem_ena;
     imem imem (
       .clk(clk),
       .ena(imem_ena),
@@ -90,11 +90,11 @@ module cpu #(
     // Register file
     // Asynchronous read: read data is available in the same cycle
     // Synchronous write: write takes one cycle
-    wire we = RegWEn;
-    wire [4:0] ra1 = a_fd;
-    wire [4:0] ra2 = b_fd;
-    wire [4:0] wa = rd_w;
-    wire [31:0] wd = write_back_data;
+    wire we;
+    wire [4:0] ra1;
+    wire [4:0] ra2;
+    wire [4:0] wa;
+    wire [31:0] wd;
     wire [31:0] rd1, rd2;
     reg_file rf (
         .clk(clk),
@@ -108,10 +108,10 @@ module cpu #(
     //// UART Receiver
     wire [7:0] uart_rx_data_out;
     wire uart_rx_data_out_valid;
-    wire uart_rx_data_out_ready = UART_Ready_To_Receive;
+    wire uart_rx_data_out_ready;
     //// UART Transmitter
-    wire [7:0] uart_tx_data_in = b_updated[7:0];
-    wire uart_tx_data_in_valid = UART_Write_valid;
+    wire [7:0] uart_tx_data_in;
+    wire uart_tx_data_in_valid;
     wire uart_tx_data_in_ready;
     uart #(
         .CLOCK_FREQ(CPU_CLOCK_FREQ),
@@ -137,9 +137,9 @@ module cpu #(
     // Add as many modules as you want
     // Feel free to move the memory modules around
 
-    wire [31:0] alu_a = ASel == PC_XM_A? pc_xm : a_updated;
-    wire [31:0] alu_b = BSel == IMM_B? imm : b_updated;
-    wire [3:0] alu_sel = ALUSel;
+    wire [31:0] alu_a;
+    wire [31:0] alu_b;
+    wire [3:0] alu_sel;
     wire [31:0] alu_result;
     alu alu (
       .a(alu_a),
@@ -148,8 +148,8 @@ module cpu #(
       .result(alu_result)
     );
 
-    wire [31:0] imm_inst = inst_fd;
-    wire [2:0] imm_sel = ImmSel;
+    wire [31:0] imm_inst;
+    wire [2:0] imm_sel;
     wire [31:0] imm_result;
     imm_gen imm_gen (
       .inst(imm_inst),
@@ -157,9 +157,9 @@ module cpu #(
       .imm(imm_result)
     );
 
-    wire [31:0] branch_a = a_updated;
-    wire [31:0] branch_b = b_updated;
-    wire [2:0] branch_sel = BrSel;
+    wire [31:0] branch_a;
+    wire [31:0] branch_b;
+    wire [2:0] branch_sel;
     wire branch_result;
     branch_comp branch_comp (
       .a(branch_a),
@@ -168,10 +168,10 @@ module cpu #(
       .Br(branch_result)
     );
 
-    wire [31:0] imem_store_din = b_updated;
-    wire [15:0] imem_store_addr = alu_result[15:0];
-    wire [2:0] imem_store_func3xm = func3_xm;
-    wire imem_store_we = IMemWE;
+    wire [31:0] imem_store_din; 
+    wire [15:0] imem_store_addr;
+    wire [2:0] imem_store_func3xm;
+    wire imem_store_we;
     wire [31:0] imem_store_dout;
     wire [13:0] imem_store_addr_out;
     wire [3:0] ImemRw4;
@@ -185,10 +185,10 @@ module cpu #(
       .MemRw4(ImemRw4)
     );
 
-    wire [31:0] mem_store_din = b_updated;
-    wire [15:0] mem_store_addr = alu_result[15:0];
-    wire [2:0] mem_store_func3xm = func3_xm;
-    wire mem_store_we = MemRW;
+    wire [31:0] mem_store_din; 
+    wire [15:0] mem_store_addr;
+    wire [2:0] mem_store_func3xm;
+    wire mem_store_we;
     wire [31:0] mem_store_dout;
     wire [13:0] mem_store_addr_out;
     wire [3:0] MemRw4;
@@ -202,9 +202,9 @@ module cpu #(
       .MemRw4(MemRw4)
     );
 
-    wire [31:0] load_din = dmem_dout;
-    wire [15:0] load_addr = alu_result_w[15:0];
-    wire [2:0] load_func3 = func3_w;
+    wire [31:0] load_din;
+    wire [15:0] load_addr;
+    wire [2:0] load_func3;
     wire [31:0] load_result;
     load load (
       .mem_data(load_din),
@@ -213,9 +213,9 @@ module cpu #(
       .load_data(load_result)
     );
 
-    wire [31:0] frwd_inst_fd = inst_fd;
-    wire [31:0] frwd_inst_xm = real_inst_xm;
-    wire [31:0] frwd_inst_w = inst_xm;
+    wire [31:0] frwd_inst_fd;
+    wire [31:0] frwd_inst_xm;
+    wire [31:0] frwd_inst_w;
     wire AFrwd1;
     wire BFrwd1;
     wire AFrwd2;
@@ -230,8 +230,8 @@ module cpu #(
       .BFrwd2(BFrwd2)
     );
 
-    wire [31:0] fd_logic_inst_fd = inst_fd;
-    wire [31:0] fd_logic_pc_fd = pc_fd;
+    wire [31:0] fd_logic_inst_fd;
+    wire [31:0] fd_logic_pc_fd;
     wire InstSel;
     wire [2:0] ImmSel;
     fd_logic fd_logic (
@@ -241,10 +241,10 @@ module cpu #(
       .ImmSel(ImmSel)
     );
 
-    wire [31:0] xm_logic_inst_xm = real_inst_xm;
-    wire [31:0] xm_logic_addr = alu_result;
-    wire [31:0] xm_logic_pc_xm = pc_xm;
-    wire xm_logic_branch_result = branch_result;
+    wire [31:0] xm_logic_inst_xm;
+    wire [31:0] xm_logic_addr;
+    wire [31:0] xm_logic_pc_xm;
+    wire xm_logic_branch_result; 
     wire ASel;
     wire BSel;
     wire [3:0] ALUSel;
@@ -272,11 +272,11 @@ module cpu #(
       .ResetCounters(ResetCounters)
     );
 
-    wire [31:0] w_logic_inst_w = inst_w;
-    wire [31:0] w_logic_inst_fd = inst_fd;
-    wire [31:0] w_logic_addr = alu_result_w;
-    wire w_logic_BrTaken = BrTaken_w;
-    wire w_logic_BIOSRest = rst;
+    wire [31:0] w_logic_inst_w; 
+    wire [31:0] w_logic_inst_fd;
+    wire [31:0] w_logic_addr;
+    wire w_logic_BrTaken; 
+    wire w_logic_BIOSRest;
     wire Flush;
     wire [1:0] PCSel;
     wire RegWEn;
@@ -346,7 +346,7 @@ wire [31:0] inst_fd = pc_fd[30]? bios_douta : imem_doutb;
     wire [6:0] func7_xm;
     wire [2:0] type_xm;
     inst_splitter xm_split(
-        .inst(inst_xm),
+        .inst(real_inst_xm),
         .opcode(opcode_xm),
         .rd(rd_xm),
         .func3(func3_xm),
@@ -436,5 +436,73 @@ always @(posedge clk) begin
 end 
 
 
+
+assign bios_addra = pc_wire_2[13:2];
+assign bios_addrb = alu_result[13:2];
+
+assign dmem_addr = mem_store_addr_out;
+assign dmem_din = mem_store_dout;
+assign dmem_we = MemRw4;
+
+assign imem_dina = imem_store_dout;
+assign imem_addra = imem_store_addr_out; 
+assign imem_addrb = pc_wire_2[15:2];
+assign mem_wea   = ImemRw4;
+assign imem_ena = pc_xm[30]; //todo not sure
+
+assign we = RegWEn;
+assign ra1 = a_fd;
+assign ra2 = b_fd;
+assign wa = rd_w;
+assign wd = write_back_data;
+
+assign uart_rx_data_out_ready = UART_Ready_To_Receive;
+
+assign uart_tx_data_in = b_updated[7:0];
+assign uart_tx_data_in_valid = UART_Write_valid;
+
+assign alu_a = ASel == PC_XM_A? pc_xm : a_updated;
+assign alu_b = BSel == IMM_B? imm : b_updated;
+assign alu_sel = ALUSel;
+
+assign imm_inst = inst_fd;
+assign imm_sel = ImmSel;
+
+assign branch_a = a_updated;
+assign branch_b = b_updated;
+assign branch_sel = BrSel;
+
+
+assign imem_store_din = b_updated;
+assign imem_store_addr = alu_result[15:0];
+assign imem_store_func3xm = func3_xm;
+assign imem_store_we = IMemWE;
+
+assign mem_store_din = b_updated;
+assign mem_store_addr = alu_result[15:0];
+assign em_store_func3xm = func3_xm;
+assign mem_store_we = MemRW;
+
+assign load_din = dmem_dout;
+assign load_addr = alu_result_w[15:0];
+assign load_func3 = func3_w;
+
+assign frwd_inst_fd = inst_fd;
+assign frwd_inst_xm = real_inst_xm;
+assign frwd_inst_w = inst_xm;
+
+assign fd_logic_inst_fd = inst_fd;
+assign fd_logic_pc_fd = pc_fd;
+
+assign xm_logic_inst_xm = real_inst_xm;
+assign xm_logic_addr = alu_result;
+assign xm_logic_pc_xm = pc_xm;
+assign xm_logic_branch_result = branch_result;
+
+assign w_logic_inst_w = inst_w;
+assign w_logic_inst_fd = inst_fd;
+assign w_logic_addr = alu_result_w;
+assign w_logic_BrTaken = BrTaken_w;
+assign w_logic_BIOSRest = rst;
 
 endmodule

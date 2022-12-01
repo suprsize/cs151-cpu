@@ -164,7 +164,7 @@ module cpu #(
     branch_comp branch_comp (
       .a(branch_a),
       .b(branch_b),
-      .BrSel(BrSel),
+      .BrSel(branch_sel),
       .Br(branch_result)
     );
 
@@ -407,7 +407,7 @@ always @(posedge clk) begin
   inst_w <= real_inst_xm;
 end 
 
-wire [31:0] write_back_data;
+reg [31:0] write_back_data;
 
 always @(*) begin
   case(WBSel) 

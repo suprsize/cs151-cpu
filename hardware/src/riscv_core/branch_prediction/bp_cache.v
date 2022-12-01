@@ -31,8 +31,8 @@ module bp_cache #(
 );
 
     // TODO: Your code
-    assign dout0 = '0;
-    assign dout1 = '0;
+    assign dout0 = 'd0;
+    assign dout1 = 'd0;
     assign hit0  = 1'b0;
     assign hit1  = 1'b0;
 

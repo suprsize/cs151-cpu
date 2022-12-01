@@ -14,6 +14,6 @@ module sat_updn #(
 );
 
     // TODO: Your code
-    assign out = '0;
+    assign out = 'd0;
 
 endmodule

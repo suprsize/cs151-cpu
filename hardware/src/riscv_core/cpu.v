@@ -199,7 +199,7 @@ module cpu #(
       .we(mem_store_we),
       .store_data(mem_store_dout),
       .mem_addr(mem_store_addr_out),
-      MemRw4(MemRw4)
+      .MemRw4(MemRw4)
     );
 
     wire [31:0] load_din = dmem_dout;

@@ -7,7 +7,7 @@ module inst_splitter #(
     output [2:0] func3,
     output [4:0] rs1, 
     output [4:0] rs2,
-    output [6:0] funct7,
+    output [6:0] func7,
     output [2:0] inst_type
 );
 
@@ -39,7 +39,7 @@ module inst_splitter #(
     assign func3 = inst[14:12];
     assign rs1 = inst[19:15];
     assign rs2 = inst[24:20];
-    assign funct7 = inst[31:25];
+    assign func7 = inst[31:25];
     assign inst_type = t;
 
     always @(*) begin

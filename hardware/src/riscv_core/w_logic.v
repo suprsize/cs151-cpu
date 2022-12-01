@@ -78,7 +78,7 @@ module w_logic #(
 
 
 
-    wire opcode_fd = inst_fd[6:0];
+    wire [6:0] opcode_fd = inst_fd[6:0];
     wire is_jal_special =  opcode_fd == JAL_OPCODE;
     wire is_jalr = opcode_w == JALR_OPCODE;
     wire is_bios_addr = Addr[31:28] == 4'b0100;

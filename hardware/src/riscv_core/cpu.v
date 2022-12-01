@@ -53,7 +53,7 @@ module cpu #(
     // Synchronous read: read takes one cycle
     // Synchronous write: write takes one cycle
     // Write-byte-enable: select which of the four bytes to write
-    wire [13:0] dmem_addr = mem_store_addr;
+    wire [13:0] dmem_addr = mem_store_addr_out;
     wire [31:0] dmem_din = mem_store_dout;
     wire [31:0] dmem_dout;
     wire [3:0] dmem_we = MemRw4;
@@ -169,7 +169,7 @@ module cpu #(
     );
 
     wire [31:0] imem_store_din = b_updated;
-    wire [15:0] imem_store_addr = alu_result;
+    wire [15:0] imem_store_addr = alu_result[15:0];
     wire [2:0] imem_store_func3xm = func3_xm;
     wire imem_store_we = IMemWE;
     wire [31:0] imem_store_dout;
@@ -186,7 +186,7 @@ module cpu #(
     );
 
     wire [31:0] mem_store_din = b_updated;
-    wire [15:0] mem_store_addr = alu_result;
+    wire [15:0] mem_store_addr = alu_result[15:0];
     wire [2:0] mem_store_func3xm = func3_xm;
     wire mem_store_we = MemRW;
     wire [31:0] mem_store_dout;

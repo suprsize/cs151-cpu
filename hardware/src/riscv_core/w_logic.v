@@ -62,12 +62,12 @@ module w_logic #(
     
 
     wire [6:0] opcode_w; 
-    wire [2:0] funct3_w;
+    wire [2:0] func3_w;
     wire [2:0] type_w;
     inst_splitter w_split(
         .inst(inst_w),
         .opcode(opcode_w),
-        .funct3(funct3_w),
+        .func3(func3_w),
         .inst_type(type_w)
     );
 

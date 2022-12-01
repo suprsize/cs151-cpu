@@ -4,7 +4,7 @@ module inst_splitter #(
     input [W_SIZE-1:0] inst,
     output [6:0] opcode, 
     output [4:0] rd, 
-    output [2:0] funct3,
+    output [2:0] func3,
     output [4:0] rs1, 
     output [4:0] rs2,
     output [6:0] funct7,
@@ -32,7 +32,7 @@ module inst_splitter #(
     AUIPC_OPCODE    = 7'h17,
     JAL_OPCODE      = 7'h6f;
 
-    reg type;
+    reg [2:0] t;
 
     assign opcode = inst[6:0];
     assign rd = inst[11:7];
@@ -40,21 +40,21 @@ module inst_splitter #(
     assign rs1 = inst[19:15];
     assign rs2 = inst[24:20];
     assign funct7 = inst[31:25];
-    assign inst_type = type;
+    assign inst_type = t;
 
     always @(*) begin
       case(opcode)
-        R_OPCODE: type = R_TYPE;
+        R_OPCODE: t = R_TYPE;
         LOAD_OPCODE,
         JALR_OPCODE,
-        I_OPCODE: type = I_TYPE;
-        S_OPCODE: type = S_TYPE;
-        B_OPCODE: type = B_TYPE;
+        I_OPCODE: t = I_TYPE;
+        S_OPCODE: t = S_TYPE;
+        B_OPCODE: t = B_TYPE;
         LUI_OPCODE,
-        AUIPC_OPCODE: type = U_TYPE;
-        JAL_OPCODE: type = J_TYPE;
-        CSR_OPCODE: type = C_TYPE;
-        default: type = R_TYPE;     // COULD BE A PROBLOM
+        AUIPC_OPCODE: t = U_TYPE;
+        JAL_OPCODE: t = J_TYPE;
+        CSR_OPCODE: t = C_TYPE;
+        default: t = R_TYPE;     // COULD BE A PROBLOM
       endcase
     end
 

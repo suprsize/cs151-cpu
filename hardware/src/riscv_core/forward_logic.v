@@ -21,49 +21,49 @@ module forward_logic #(
 
     wire [6:0] opcode_fd; 
     wire [4:0] rd_fd;
-    wire [2:0] funct3_fd;
+    wire [2:0] func3_fd;
     wire [4:0] a_fd, b_fd;
-    wire [6:0] funct7_fd;
+    wire [6:0] func7_fd;
     wire [2:0] type_fd;
     inst_splitter fd_split(
         .inst(inst_fd),
         .opcode(opcode_fd),
         .rd(rd_fd),
-        .funct3(funct3_fd),
+        .func3(func3_fd),
         .rs1(a_fd), .rs2(b_fd),
-        .funct7(funct7_fd),
+        .func7(func7_fd),
         .inst_type(type_fd)
     );
 
     wire [6:0] opcode_xm; 
     wire [4:0] rd_xm;
-    wire [2:0] funct3_xm;
+    wire [2:0] func3_xm;
     wire [4:0] a_xm, b_xm;
-    wire [6:0] funct7_xm;
+    wire [6:0] func7_xm;
     wire [2:0] type_xm;
     inst_splitter xm_split(
         .inst(inst_xm),
         .opcode(opcode_xm),
         .rd(rd_xm),
-        .funct3(funct3_xm),
+        .func3(func3_xm),
         .rs1(a_xm), .rs2(b_xm),
-        .funct7(funct7_xm),
+        .func7(func7_xm),
         .inst_type(type_xm)
     );
 
     wire [6:0] opcode_w; 
     wire [4:0] rd_w;
-    wire [2:0] funct3_w;
+    wire [2:0] func3_w;
     wire [4:0] a_w, b_w;
-    wire [6:0] funct7_w;
+    wire [6:0] func7_w;
     wire [2:0] type_w;
     inst_splitter w_split(
         .inst(inst_w),
         .opcode(opcode_w),
         .rd(rd_w),
-        .funct3(funct3_w),
+        .func3(func3_w),
         .rs1(a_w), .rs2(b_w),
-        .funct7(funct7_w),
+        .func7(func7_w),
         .inst_type(type_w)
     );
 

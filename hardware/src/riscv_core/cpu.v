@@ -56,7 +56,7 @@ module cpu #(
     wire [13:0] dmem_addr = mem_store_addr;
     wire [31:0] dmem_din = mem_store_dout;
     wire [31:0] dmem_dout;
-    wire [3:0] dmem_we = MemRW4;
+    wire [3:0] dmem_we = MemRw4;
     wire dmem_en = 'd1;
     dmem dmem (
       .clk(clk),
@@ -137,13 +137,14 @@ module cpu #(
     // Add as many modules as you want
     // Feel free to move the memory modules around
 
-    wire [31:0] alu_a, alu_b;
-    wire [3:0] ALUSel;
+    wire [31:0] alu_a = ASel == PC_XM_A? pc_xm : a_updated;
+    wire [31:0] alu_b = BSel == IMM_B? imm : b_updated;
+    wire [3:0] alu_sel = ALUSel;
     wire [31:0] alu_result;
     alu alu (
       .a(alu_a),
       .b(alu_b),
-      .ALUSel(ALUSel),
+      .ALUSel(alu_sel),
       .result(alu_result)
     );
 
@@ -169,7 +170,7 @@ module cpu #(
 
     wire [31:0] imem_store_din = b_updated;
     wire [15:0] imem_store_addr = alu_result;
-    wire [2:0] imem_store_func3xm = funct3_xm;
+    wire [2:0] imem_store_func3xm = func3_xm;
     wire imem_store_we = IMemWE;
     wire [31:0] imem_store_dout;
     wire [13:0] imem_store_addr_out;
@@ -181,12 +182,12 @@ module cpu #(
       .we(imem_store_we),
       .store_data(imem_store_dout),
       .mem_addr(imem_store_addr_out),
-      MemRW4(ImemRw4)
+      .MemRw4(ImemRw4)
     );
 
     wire [31:0] mem_store_din = b_updated;
     wire [15:0] mem_store_addr = alu_result;
-    wire [2:0] mem_store_func3xm = funct3_xm;
+    wire [2:0] mem_store_func3xm = func3_xm;
     wire mem_store_we = MemRW;
     wire [31:0] mem_store_dout;
     wire [13:0] mem_store_addr_out;
@@ -198,12 +199,12 @@ module cpu #(
       .we(mem_store_we),
       .store_data(mem_store_dout),
       .mem_addr(mem_store_addr_out),
-      MemRW4(MemRw4)
+      MemRw4(MemRw4)
     );
 
     wire [31:0] load_din = dmem_dout;
     wire [15:0] load_addr = alu_result_w;
-    wire [2:0] load_func3 = funct3_w;
+    wire [2:0] load_func3 = func3_w;
     wire [31:0] load_result;
     load load (
       .mem_data(load_din),
@@ -253,7 +254,7 @@ module cpu #(
     wire IMemWE;
     wire UART_Write_valid;
     wire UART_Ready_To_Receive;
-    wire ResetCounter;
+    wire ResetCounters;
     xm_logic xm_logic (
       .inst_xm(xm_logic_inst_xm),
       .Addr(xm_logic_addr),
@@ -268,7 +269,7 @@ module cpu #(
       .IMemWE(IMemWE),
       .UART_Write_valid(UART_Write_valid),
       .UART_Ready_To_Receive(UART_Ready_To_Receive),
-      .ResetCounter(ResetCounter)
+      .ResetCounters(ResetCounters)
     );
 
     wire [31:0] w_logic_inst_w = inst_w;
@@ -280,7 +281,7 @@ module cpu #(
     wire [1:0] PCSel;
     wire RegWEn;
     wire CSRWen;
-    wire [2:0] WBsel;
+    wire [2:0] WBSel;
     w_logic w_logic (
       .inst_w(w_logic_inst_w),
       .inst_fd(w_logic_inst_fd),
@@ -329,18 +330,18 @@ inst_splitter fd_split(
     .rs2(b_fd)
 );
  
-wire [2:0] funct3_xm;
+wire [2:0] func3_xm;
 inst_splitter xm_split(
     .inst(real_inst_xm),
-    .funct3(funct3_xm)
+    .func3(func3_xm)
 );
 
 wire [4:0] rd_w;
-wire [2:0] funct3_w;
+wire [2:0] func3_w;
 inst_splitter w_split(
     .inst(inst_w),
     .rd(rd_w),
-    .funct3(funct3_w)
+    .func3(func3_w)
 );
 
 always @(posedge clk) begin
@@ -364,10 +365,6 @@ assign real_inst_xm = Flush? NOP : inst_xm;
 wire[31:0] a_updated, b_updated;
 assign a_updated = AFrwd1? write_back_data : a;
 assign b_updated = BFrwd1? write_back_data : b;
-
-assign alu_a = ASel == PC_XM_A? pc_xm : a_updated;
-assign alu_b = BSel == IMM_B? imm : b_updated;
-
 
 
 always @(posedge clk) begin

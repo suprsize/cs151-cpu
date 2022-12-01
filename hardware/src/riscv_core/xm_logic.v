@@ -60,17 +60,17 @@ module xm_logic #(
 
     wire [6:0] opcode_xm; 
     wire [4:0] rd_xm;
-    wire [2:0] funct3_xm;
+    wire [2:0] func3_xm;
     wire [4:0] a_xm, b_xm;
-    wire [6:0] funct7_xm;
+    wire [6:0] func7_xm;
     wire [2:0] type_xm;
     inst_splitter xm_split(
         .inst(inst_xm),
         .opcode(opcode_xm),
         .rd(rd_xm),
-        .funct3(funct3_xm),
+        .func3(func3_xm),
         .rs1(a_xm), .rs2(b_xm),
-        .funct7(funct7_xm),
+        .func7(func7_xm),
         .inst_type(type_xm)
     );
 
@@ -81,7 +81,7 @@ module xm_logic #(
     assign BSel = b_sel;
     assign ALUSel = alu_sel;
 
-    assign BrSel                  = funct3_xm;
+    assign BrSel                  = func3_xm;
     assign BrTaken                = type_xm == B_TYPE? Br : is_jalr;
     assign MemRW                  = type_xm == S_TYPE ? Addr[31:30] == 2'd00 && Addr[28]     : FALSE;
     assign IMemWE                 = type_xm == S_TYPE ? BIOS_mode && Addr[31:29] == 3'b001   : FALSE;
@@ -90,7 +90,7 @@ module xm_logic #(
     assign ResetCounters          = type_xm == S_TYPE && Addr == UART_COUNTERS_RESET_ADDR;
     
     wire is_jalr = opcode_xm == JALR_OPCODE;
-    wire is_srai = type_xm == I_TYPE && SRA == {funct7_xm[5], funct3_xm};
+    wire is_srai = type_xm == I_TYPE && SRA == {func7_xm[5], func3_xm};
     wire BIOS_mode = PC_XM[30];
 
     always @(*) begin
@@ -98,13 +98,13 @@ module xm_logic #(
         R_TYPE: begin
           a_sel = RS1_A;
           b_sel = RS2_B;
-          alu_sel = {funct7_xm[5], funct3_xm};
+          alu_sel = {func7_xm[5], func3_xm};
         end
 
         I_TYPE: begin     
           a_sel = RS1_A;
           b_sel = IMM_B;
-          alu_sel = {is_srai, funct3_xm};  
+          alu_sel = {is_srai, func3_xm};  
         end
 
         S_TYPE: begin
@@ -128,7 +128,7 @@ module xm_logic #(
         C_TYPE: begin
           a_sel = RS1_A;
           b_sel = IMM_B;
-          alu_sel = funct3_xm == CSRWI_FUNC3? B : A;
+          alu_sel = func3_xm == CSRWI_FUNC3? B : A;
         end
 
         default: begin // jal is already covered by special case of jal. not really needed.

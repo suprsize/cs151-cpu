@@ -73,6 +73,10 @@ module xm_logic #(
         .func7(func7_xm),
         .inst_type(type_xm)
     );
+    
+    wire is_jalr = opcode_xm == JALR_OPCODE;
+    wire is_srai = type_xm == I_TYPE && SRA == {func7_xm[5], func3_xm};
+    wire BIOS_mode = PC_XM[30];
 
     reg a_sel;
     reg b_sel;
@@ -89,9 +93,7 @@ module xm_logic #(
     assign UART_Ready_To_Receive  = opcode_xm == LOAD_OPCODE ? Addr == UART_RECEIVER_ADDR : FALSE;
     assign ResetCounters          = type_xm == S_TYPE && Addr == UART_COUNTERS_RESET_ADDR;
     
-    wire is_jalr = opcode_xm == JALR_OPCODE;
-    wire is_srai = type_xm == I_TYPE && SRA == {func7_xm[5], func3_xm};
-    wire BIOS_mode = PC_XM[30];
+
 
     always @(*) begin
       case(type_xm) 

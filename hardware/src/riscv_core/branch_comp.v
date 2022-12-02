@@ -30,7 +30,7 @@ module branch_comp #(
             BLT,
             BLTU: branch = BrLt;
             BGE, 
-            BGEU: branch = !BrLt & BrEq;
+            BGEU: branch = !BrLt || BrEq;
             default: branch = 1'd0;
         endcase
     end

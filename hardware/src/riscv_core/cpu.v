@@ -131,7 +131,6 @@ module cpu #(
         .data_in_ready(uart_tx_data_in_ready)
     );
 
-    reg [31:0] tohost_csr = csr_51e; //TODO
 
     // TODO: Your code to implement a fully functioning RISC-V core
     // Add as many modules as you want
@@ -303,7 +302,7 @@ reg [31:0] inst_xm, inst_w;
 reg BrTaken_w;
 reg [31:0] alu_result_w;
 reg [31:0] inst_counter, cycle_counter;
-
+reg [31:0] tohost_csr = csr_51e; //TODO
 
 
 reg [31:0] pc_wire_1;
@@ -317,11 +316,48 @@ always @(*) begin
 end
 wire [31:0] pc_wire_2 = !BrTaken || rst? pc_wire_1 : alu_result;
 
+reg [31:0] write_back_data;
+
+always @(*) begin
+  case(WBSel) 
+    PC_PLUS_4_W     : write_back_data = pc_w + 'd4;
+    ALU_OUTPUT_W    : write_back_data = alu_result_w;
+    DMEM_W          : write_back_data = load_result;
+    UART_RECEIVER_W : write_back_data = {24'b0, uart_rx_data_out};
+    UART_CONTROL_W  : write_back_data = {30'b0, uart_rx_data_out_valid, uart_tx_data_in_ready};
+    BIOS_W          : write_back_data = bios_doutb;
+    CYC_COUNTER_W   : write_back_data = cycle_counter;
+    INST_COUNTER_W  : write_back_data = inst_counter;
+  endcase
+end 
+
 always @(posedge clk) begin
   pc_fd <= pc_wire_2;
 end
 
 wire [31:0] inst_fd = pc_fd[30]? bios_douta : imem_doutb;
+
+always @(posedge clk) begin
+  if (AFrwd2) a <= write_back_data;
+  else a <= rd1;
+end  
+always @(posedge clk) begin
+  if (BFrwd2) b <= write_back_data;
+  else b <= rd2;
+end 
+always @(posedge clk) begin
+  imm <= imm_result;
+end  
+always @(posedge clk) begin
+  inst_xm <= inst_fd;
+end 
+
+wire [31:0] real_inst_xm;
+assign real_inst_xm = Flush? NOP : inst_xm;
+
+wire[31:0] a_updated, b_updated;
+assign a_updated = AFrwd1? write_back_data : a;
+assign b_updated = BFrwd1? write_back_data : b;
 
     wire [6:0] opcode_fd; 
     wire [4:0] rd_fd;
@@ -370,30 +406,7 @@ wire [31:0] inst_fd = pc_fd[30]? bios_douta : imem_doutb;
         .func7(func7_w),
         .inst_type(type_w)
     );
-
-always @(posedge clk) begin
-  if (AFrwd2) a <= write_back_data;
-  else a <= rd1;
-end  
-always @(posedge clk) begin
-  if (BFrwd2) b <= write_back_data;
-  else b <= rd2;
-end 
-always @(posedge clk) begin
-  imm <= imm_result;
-end  
-always @(posedge clk) begin
-  inst_xm <= inst_fd;
-end 
-
-wire [31:0] real_inst_xm;
-assign real_inst_xm = Flush? NOP : inst_xm;
-
-wire[31:0] a_updated, b_updated;
-assign a_updated = AFrwd1? write_back_data : a;
-assign b_updated = BFrwd1? write_back_data : b;
-
-
+    
 always @(posedge clk) begin
   pc_w <= pc_xm;
 end 
@@ -407,20 +420,7 @@ always @(posedge clk) begin
   inst_w <= real_inst_xm;
 end 
 
-reg [31:0] write_back_data;
 
-always @(*) begin
-  case(WBSel) 
-    PC_PLUS_4_W     : write_back_data = pc_w + 'd4;
-    ALU_OUTPUT_W    : write_back_data = alu_result_w;
-    DMEM_W          : write_back_data = load_result;
-    UART_RECEIVER_W : write_back_data = {24'b0, uart_rx_data_out};
-    UART_CONTROL_W  : write_back_data = {30'b0, uart_rx_data_out_valid, uart_tx_data_in_ready};
-    BIOS_W          : write_back_data = bios_doutb;
-    CYC_COUNTER_W   : write_back_data = cycle_counter;
-    INST_COUNTER_W  : write_back_data = inst_counter;
-  endcase
-end 
 
 always @(posedge clk) begin
   if(CSRWen) csr_51e <= alu_result_w;
@@ -447,7 +447,7 @@ assign dmem_we = MemRw4;
 assign imem_dina = imem_store_dout;
 assign imem_addra = imem_store_addr_out; 
 assign imem_addrb = pc_wire_2[15:2];
-assign mem_wea   = ImemRw4;
+assign imem_wea   = ImemRw4;
 assign imem_ena = pc_xm[30]; //todo not sure
 
 assign we = RegWEn;
@@ -480,7 +480,7 @@ assign imem_store_we = IMemWE;
 
 assign mem_store_din = b_updated;
 assign mem_store_addr = alu_result[15:0];
-assign em_store_func3xm = func3_xm;
+assign mem_store_func3xm = func3_xm;
 assign mem_store_we = MemRW;
 
 assign load_din = dmem_dout;

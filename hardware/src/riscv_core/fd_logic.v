@@ -6,9 +6,6 @@ module fd_logic #(
     output InstSel,
     output [2:0] ImmSel 
 );
-
-    assign InstSel = PC_fd[30]; 
-    assign ImmSel = type_fd;
     
     wire [6:0] opcode_fd; 
     wire [4:0] rd_fd;
@@ -25,5 +22,9 @@ module fd_logic #(
         .func7(func7_fd),
         .inst_type(type_fd)
     );
+    
+    
+    assign InstSel = PC_fd[30]; 
+    assign ImmSel = type_fd;
 
 endmodule

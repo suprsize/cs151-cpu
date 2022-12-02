@@ -349,7 +349,8 @@ always @(posedge clk) begin
   imm <= imm_result;
 end  
 always @(posedge clk) begin
-  inst_xm <= inst_fd;
+  if(rst) inst_xm <= 'd0;
+  else inst_xm <= inst_fd;
 end 
 
 wire [31:0] real_inst_xm;
@@ -414,10 +415,12 @@ always @(posedge clk) begin
   alu_result_w <= alu_result;
 end 
 always @(posedge clk) begin
-  BrTaken_w <= BrTaken;
+  if (rst) BrTaken_w <= 'd0;
+  else BrTaken_w <= BrTaken;
 end 
 always @(posedge clk) begin
-  inst_w <= real_inst_xm;
+  if (rst) inst_w <= 'd0;
+  else inst_w <= real_inst_xm;
 end 
 
 

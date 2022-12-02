@@ -44,6 +44,7 @@ module xm_logic #(
     UART_RECEIVER_ADDR        = 32'h80000004;
     localparam
     LOAD_OPCODE     = 7'h03,
+    I_OPCODE		= 7'h13,
     AUIPC_OPCODE    = 7'h17,
     JALR_OPCODE     = 7'h67;
     localparam
@@ -106,7 +107,7 @@ module xm_logic #(
         I_TYPE: begin     
           a_sel = RS1_A;
           b_sel = IMM_B;
-          alu_sel = {is_srai, func3_xm};  
+          alu_sel = opcode_xm == I_OPCODE ? {is_srai, func3_xm} : ADD;  
         end
 
         S_TYPE: begin

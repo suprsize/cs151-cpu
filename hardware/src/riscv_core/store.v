@@ -15,22 +15,23 @@ module store #(
     localparam SW_FUNC3 = 3'd2;  
 
 
+
     reg [W_SIZE-1:0] out;
     reg [3:0] mask;
     wire [W_SIZE-1:0] shifted_data;
     wire [4:0] bytes_to_shift;
 
     assign bytes_to_shift = {addr[1:0], 3'd0};
-    assign shifted_data = din >> bytes_to_shift;
+    assign shifted_data = din << bytes_to_shift;
     assign mem_addr = addr[15:2];
 
-    assign store_data = func3 == SW_FUNC3? din : shifted_data;    
+    assign store_data = shifted_data;    
     assign MemRw4 = we? mask : 4'd0;
 
     always @(*) begin
       case(func3)
-        SB_FUNC3:  mask = 4'b0001;
-        SH_FUNC3:  mask = 4'b0011;
+        SB_FUNC3:  mask = 4'b0001 << addr[1:0];
+        SH_FUNC3:  mask = 4'b0011 << addr[1:0];
         SW_FUNC3:  mask = 4'b1111;
         default:   mask = 4'd0;
       endcase

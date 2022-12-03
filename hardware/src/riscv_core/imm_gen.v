@@ -24,7 +24,7 @@ module imm_gen #(
         B_TYPE: out = { {20{inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'b0 };
         U_TYPE: out = { inst[31:12], 12'b0 };
         J_TYPE: out = { {12{inst[31]}}, inst[19:12], inst[20], inst[30:21], 1'b0 };
-        C_TYPE: out = { {27{inst[19]}}, inst[19:15] };
+        C_TYPE: out = { 27'd0, inst[19:15] };
         default: out = 'd0;
       endcase
     end

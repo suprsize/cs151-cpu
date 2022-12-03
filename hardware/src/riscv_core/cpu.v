@@ -296,13 +296,12 @@ module cpu #(
 
 
 reg [31:0] pc_fd, pc_xm, pc_w;
-reg [31:0] csr_51e;
 reg [31:0] a, b, imm;
 reg [31:0] inst_xm, inst_w;
 reg BrTaken_w;
 reg [31:0] alu_result_w;
 reg [31:0] inst_counter, cycle_counter;
-reg [31:0] tohost_csr = csr_51e; //TODO
+reg [31:0] tohost_csr; //TODO
 
 
 reg [31:0] pc_wire_1;
@@ -430,7 +429,7 @@ end
 
 
 always @(posedge clk) begin
-  if(CSRWen) csr_51e <= alu_result_w;
+  if(CSRWen) tohost_csr <= alu_result_w;
 end 
 always @(posedge clk) begin
   if(rst) cycle_counter <= 'd0;

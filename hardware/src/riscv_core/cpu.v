@@ -345,6 +345,10 @@ always @(posedge clk) begin
   if (BFrwd2) b <= write_back_data;
   else b <= rd2;
 end 
+
+always @(posedge clk) begin
+  pc_xm <= pc_fd;
+end  
 always @(posedge clk) begin
   imm <= imm_result;
 end  

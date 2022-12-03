@@ -495,7 +495,7 @@ assign load_func3 = func3_w;
 
 assign frwd_inst_fd = inst_fd;
 assign frwd_inst_xm = real_inst_xm;
-assign frwd_inst_w = inst_xm;
+assign frwd_inst_w = inst_w;
 
 assign fd_logic_inst_fd = inst_fd;
 assign fd_logic_pc_fd = pc_fd;

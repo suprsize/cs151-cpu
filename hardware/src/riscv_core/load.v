@@ -6,11 +6,12 @@ module load #(
     input [2:0] func3,
     output [W_SIZE-1:0] load_data
 );
-    localparam LB_FUNC3     = 3'd0;
-    localparam LH_FUNC3     = 3'd1;
-    localparam LW_FUNC3     = 3'd2;  
-    localparam LBU_FUNC3    = 3'd4;
-    localparam LHU_FUNC3    = 3'd5;  
+    localparam 
+    LB_FUNC3     = 3'b000,
+    LH_FUNC3     = 3'b001,
+    LW_FUNC3     = 3'b010,
+    LBU_FUNC3    = 3'b100,
+    LHU_FUNC3    = 3'b101;  
 
     reg [W_SIZE-1:0] out;
     wire [W_SIZE-1:0] shifted_data;

@@ -449,6 +449,8 @@ end
 
 assign bios_addra = pc_wire_2[13:2];
 assign bios_addrb = alu_result[13:2];
+assign bios_ena = pc_wire_2[30];
+assign bios_enb = alu_result[30];
 
 assign dmem_addr = mem_store_addr_out;
 assign dmem_din = mem_store_dout;

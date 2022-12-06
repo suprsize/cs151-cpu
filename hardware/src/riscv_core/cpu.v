@@ -429,7 +429,11 @@ end
 
 
 always @(posedge clk) begin
-  if(CSRWen) tohost_csr <= alu_result_w;
+  if (rst) tohost_csr <= 'd0;
+  else begin
+	if(CSRWen) tohost_csr <= alu_result_w;
+  end
+  
 end 
 always @(posedge clk) begin
   if(rst) cycle_counter <= 'd0;

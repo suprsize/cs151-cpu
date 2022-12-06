@@ -14,7 +14,7 @@ module cpu #(
     ALU_OUTPUT_P    = 2'd1,
     JAL_SPECIAL_P   = 2'd2,
     BIOS_REST_P     = 2'd3;
-    localparam NOP = 32'h0; //TODO MIGHT need to be different
+    localparam NOP = 32'h0000_0033; // NOP = add x0, x0, x0
     localparam
     RS1_A   = 1'd0,
     RS2_B   = 1'd0,
@@ -352,7 +352,7 @@ always @(posedge clk) begin
   imm <= imm_result;
 end  
 always @(posedge clk) begin
-  if(rst) inst_xm <= 'd0;
+  if(rst) inst_xm <= NOP;
   else inst_xm <= inst_fd;
 end 
 
@@ -422,7 +422,7 @@ always @(posedge clk) begin
   else BrTaken_w <= BrTaken;
 end 
 always @(posedge clk) begin
-  if (rst) inst_w <= 'd0;
+  if (rst) inst_w <= NOP;
   else inst_w <= real_inst_xm;
 end 
 

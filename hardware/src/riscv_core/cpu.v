@@ -431,7 +431,7 @@ assign b_updated = BFrwd1? write_back_data : b;
     );
     
 always @(posedge clk) begin
-	if (rst) pc_xm <= 'd0;
+	if (rst) pc_w <= 'd0;
 	else pc_w <= pc_xm;
 end 
 always @(posedge clk) begin

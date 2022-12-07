@@ -14,6 +14,17 @@ module sat_updn #(
 );
 
     // TODO: Your code
-    assign out = 'd0;
+    localparam 
+    MIN = {WIDTH{1'b0}},
+    MAX = {WIDTH{1'b1}};
+
+    reg [WIDTH-1:0] sat_cnt;
+    assign out = sat_cnt;
+
+    always @(*) begin 
+        if (up) sat_cnt = (in == MAX) ? MAX : in + 'b1;
+        else if (dn) sat_cnt = (in == MIN) ? MIN : in - 'b1;
+        else sat_cnt = 'b0;
+    end
 
 endmodule

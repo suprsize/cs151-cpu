@@ -31,9 +31,55 @@ module bp_cache #(
 );
 
     // TODO: Your code
-    assign dout0 = 'd0;
-    assign dout1 = 'd0;
-    assign hit0  = 1'b0;
-    assign hit1  = 1'b0;
+    
+    // Using TIO model to build direct-mapped cache
+    // No byte offset bits b/c data is just 2-bit saturating counter
+    localparam 
+    INDEXWIDTH = $clog2(LINES),
+    TAGWIDTH = AWIDTH - INDEXWIDTH,
+    CACHEWIDTH = TAGWIDTH + 1 + DWIDTH; // each cache line will contain the tag, valid bit, and data (2-bit saturating counter)
+
+    reg [CACHEWIDTH-1:0] buffer [LINES-1:0];
+    integer k; 
+    initial begin
+        for (k = 0; k < LINES; k = k + 1) begin
+            buffer[k] = 'b0;
+        end
+    end
+
+    reg [CACHEWIDTH-1:0] buf0;
+    reg [CACHEWIDTH-1:0] buf1;
+
+    wire [TAGWIDTH-1:0] tag_ra0 = ra0[AWIDTH-1:INDEXWIDTH];
+    wire [TAGWIDTH-1:0] tag_ra1 = ra1[AWIDTH-1:INDEXWIDTH];
+
+    wire [TAGWIDTH-1:0] tag_buf0 = buf0[CACHEWIDTH-1:CACHEWIDTH-TAGWIDTH];
+    wire [TAGWIDTH-1:0] tag_buf1 = buf1[CACHEWIDTH-1:CACHEWIDTH-TAGWIDTH];
+
+    wire valid_buf0 = buf0[DWIDTH];
+    wire valid_buf1 = buf1[DWIDTH];
+
+    wire [DWIDTH-1:0] data_buf0 = buf0[DWIDTH-1:0];
+    wire [DWIDTH-1:0] data_buf1 = buf1[DWIDTH-1:0];
+
+    assign dout0 = hit0 ? data_buf0 : 'b0;
+    assign dout1 = hit1 ? data_buf1 : 'b0;
+    assign hit0  = valid_buf0 && tag_buf0 == tag_ra0; // check tags are equal and valid bit on
+    assign hit1  = valid_buf1 && tag_buf1 == tag_ra1;
+
+    always @(*) begin
+        buf0 = buffer[ra0[INDEXWIDTH-1:0]];
+        buf1 = buffer[ra1[INDEXWIDTH-1:0]];
+    end
+
+    always @(posedge clk) begin
+        if (reset) begin
+            integer j; 
+            for (j = 0; j < LINES; j = j + 1) begin
+                buffer[j] <= 'b0;
+            end    
+        end
+        else if (we) buffer[wa[INDEXWIDTH-1:0]] <= {wa[AWIDTH-1:INDEXWIDTH], 1'b1, din};
+    end    
 
 endmodule

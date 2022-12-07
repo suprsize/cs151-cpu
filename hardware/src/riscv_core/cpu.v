@@ -462,8 +462,7 @@ always @(posedge clk) begin
 end 
 always @(posedge clk) begin
   if(rst) inst_counter <= 'd0;
-  else if (Flush) inst_counter <= inst_counter - 'd1; //TODO: don't know how to count instructions
-  else inst_counter <= cycle_counter + 'd1;
+  else if (inst_w != NOP) inst_counter <= inst_counter + 'd1;
 end 
 
 

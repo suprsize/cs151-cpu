@@ -14,7 +14,7 @@ module cpu #(
     ALU_OUTPUT_P    = 2'd1,
     JAL_SPECIAL_P   = 2'd2,
     BIOS_REST_P     = 2'd3;
-    localparam NOP = 32'h0; //TODO MIGHT need to be different
+    localparam NOP 	= 32'h0000_0013; //addi X0, X0, 0
     localparam
     RS1_A   = 1'd0,
     RS2_B   = 1'd0,
@@ -37,8 +37,8 @@ module cpu #(
     wire [11:0] bios_addra;
     wire [11:0] bios_addrb;
     wire [31:0] bios_douta, bios_doutb;
-    wire bios_ena = 'd1; //todo, don't know
-    wire bios_enb = 'd1;
+    wire bios_ena; //todo, don't know
+    wire bios_enb;
     bios_mem bios_mem (
       .clk(clk),
       .ena(bios_ena),
@@ -211,6 +211,17 @@ module cpu #(
       .func3(load_func3),
       .load_data(load_result)
     );
+    
+	wire [31:0] bios_load_din;
+    wire [15:0] bios_load_addr;
+    wire [2:0] bios_load_func3;
+    wire [31:0] bios_load_result;
+    load bios_load (
+      .mem_data(bios_load_din),
+      .addr(bios_load_addr),
+      .func3(bios_load_func3),
+      .load_data(bios_load_result)
+    );
 
     wire [31:0] frwd_inst_fd;
     wire [31:0] frwd_inst_xm;
@@ -324,7 +335,7 @@ always @(*) begin
     DMEM_W          : write_back_data = load_result;
     UART_RECEIVER_W : write_back_data = {24'b0, uart_rx_data_out};
     UART_CONTROL_W  : write_back_data = {30'b0, uart_rx_data_out_valid, uart_tx_data_in_ready};
-    BIOS_W          : write_back_data = bios_doutb;
+    BIOS_W          : write_back_data = bios_load_result;
     CYC_COUNTER_W   : write_back_data = cycle_counter;
     INST_COUNTER_W  : write_back_data = inst_counter;
   endcase
@@ -337,22 +348,30 @@ end
 wire [31:0] inst_fd = pc_fd[30]? bios_douta : imem_doutb;
 
 always @(posedge clk) begin
-  if (AFrwd2) a <= write_back_data;
-  else a <= rd1;
+	if (rst) a <= 'd0;
+	else begin
+	  if (AFrwd2) a <= write_back_data;
+	  else a <= rd1;
+	end
 end  
 always @(posedge clk) begin
-  if (BFrwd2) b <= write_back_data;
-  else b <= rd2;
+	if (rst) b <= 'd0;
+	else begin
+	  if (BFrwd2) b <= write_back_data;
+	  else b <= rd2;
+	end
 end 
 
 always @(posedge clk) begin
-  pc_xm <= pc_fd;
+	if (rst) pc_xm <= 'd0;
+	else pc_xm <= pc_fd;
 end  
 always @(posedge clk) begin
-  imm <= imm_result;
+	if (rst) imm <= 'd0;
+	else imm <= imm_result;
 end  
 always @(posedge clk) begin
-  if(rst) inst_xm <= 'd0;
+  if(rst) inst_xm <= NOP;
   else inst_xm <= inst_fd;
 end 
 
@@ -412,17 +431,19 @@ assign b_updated = BFrwd1? write_back_data : b;
     );
     
 always @(posedge clk) begin
-  pc_w <= pc_xm;
+	if (rst) pc_xm <= 'd0;
+	else pc_w <= pc_xm;
 end 
 always @(posedge clk) begin
-  alu_result_w <= alu_result;
+	if (rst) alu_result_w <= 'd0;
+	else alu_result_w <= alu_result;
 end 
 always @(posedge clk) begin
   if (rst) BrTaken_w <= 'd0;
   else BrTaken_w <= BrTaken;
 end 
 always @(posedge clk) begin
-  if (rst) inst_w <= 'd0;
+  if (rst) inst_w <= NOP;
   else inst_w <= real_inst_xm;
 end 
 
@@ -449,6 +470,8 @@ end
 
 assign bios_addra = pc_wire_2[13:2];
 assign bios_addrb = alu_result[13:2];
+assign bios_ena = pc_wire_2[30]; //todo, don't know
+assign bios_enb = alu_result[30];
 
 assign dmem_addr = mem_store_addr_out;
 assign dmem_din = mem_store_dout;
@@ -496,6 +519,10 @@ assign mem_store_we = MemRW;
 assign load_din = dmem_dout;
 assign load_addr = alu_result_w[15:0];
 assign load_func3 = func3_w;
+
+assign bios_load_din = bios_doutb;
+assign bios_load_addr = alu_result_w[15:0];
+assign bios_load_func3 = func3_w;
 
 assign frwd_inst_fd = inst_fd;
 assign frwd_inst_xm = real_inst_xm;

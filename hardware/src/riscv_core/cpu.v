@@ -259,7 +259,7 @@ module cpu #(
     wire BSel;
     wire [3:0] ALUSel;
     wire [2:0] BrSel;       
-    wire BrTaken;
+    wire Flush;
     wire MemRW; 
     wire IMemWE;
     wire UART_Write_valid;
@@ -274,7 +274,7 @@ module cpu #(
       .BSel(BSel),
       .ALUSel(ALUSel),
       .BrSel(BrSel),       
-      .BrTaken(BrTaken),
+      .Flush(Flush),
       .MemRW(MemRW),
       .IMemWE(IMemWE),
       .UART_Write_valid(UART_Write_valid),
@@ -285,9 +285,7 @@ module cpu #(
     wire [31:0] w_logic_inst_w; 
     wire [31:0] w_logic_inst_fd;
     wire [31:0] w_logic_addr;
-    wire w_logic_BrTaken; 
     wire w_logic_BIOSRest;
-    wire Flush;
     wire [1:0] PCSel;
     wire RegWEn;
     wire CSRWen;
@@ -296,9 +294,7 @@ module cpu #(
       .inst_w(w_logic_inst_w),
       .inst_fd(w_logic_inst_fd),
       .Addr(w_logic_addr),
-      .BrTaken(w_logic_BrTaken),
       .BIOSRest(w_logic_BIOSRest),
-      .Flush(Flush),
       .PCSel(PCSel),
       .RegWEn(RegWEn),
       .CSRWen(CSRWen),
@@ -309,7 +305,7 @@ module cpu #(
 reg [31:0] pc_fd, pc_xm, pc_w;
 reg [31:0] a, b, imm;
 reg [31:0] inst_xm, inst_w;
-reg BrTaken_w;
+reg flush_w;
 reg [31:0] alu_result_w;
 reg [31:0] inst_counter, cycle_counter;
 reg [31:0] tohost_csr; //TODO
@@ -324,7 +320,7 @@ always @(*) begin
     BIOS_REST_P   : pc_wire_1 = RESET_PC;
   endcase
 end
-wire [31:0] pc_wire_2 = !BrTaken || rst? pc_wire_1 : alu_result;
+wire [31:0] pc_wire_2 = !Flush || rst? pc_wire_1 : alu_result;
 
 reg [31:0] write_back_data;
 
@@ -376,7 +372,7 @@ always @(posedge clk) begin
 end 
 
 wire [31:0] real_inst_xm;
-assign real_inst_xm = Flush? NOP : inst_xm;
+assign real_inst_xm = flush_w? NOP : inst_xm;
 
 wire[31:0] a_updated, b_updated;
 assign a_updated = AFrwd1? write_back_data : a;
@@ -439,8 +435,8 @@ always @(posedge clk) begin
 	else alu_result_w <= alu_result;
 end 
 always @(posedge clk) begin
-  if (rst) BrTaken_w <= 'd0;
-  else BrTaken_w <= BrTaken;
+  if (rst) flush_w <= 'd0;
+  else flush_w <= Flush;
 end 
 always @(posedge clk) begin
   if (rst) inst_w <= NOP;
@@ -538,7 +534,6 @@ assign xm_logic_branch_result = branch_result;
 assign w_logic_inst_w = inst_w;
 assign w_logic_inst_fd = inst_fd;
 assign w_logic_addr = alu_result_w;
-assign w_logic_BrTaken = BrTaken_w;
 assign w_logic_BIOSRest = rst;
 
 endmodule

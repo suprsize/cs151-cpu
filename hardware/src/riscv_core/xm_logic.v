@@ -9,7 +9,7 @@ module xm_logic #(
     output BSel,
     output [3:0] ALUSel,
     output [2:0] BrSel,       // Func3 of inst_xm
-    output BrTaken,
+    output Flush,
     output MemRW, 
     output IMemWE,
     output UART_Write_valid,
@@ -87,7 +87,7 @@ module xm_logic #(
     assign ALUSel = alu_sel;
 
     assign BrSel                  = func3_xm;
-    assign BrTaken                = type_xm == B_TYPE? Br : is_jalr;
+    assign Flush                  = type_xm == B_TYPE? Br : is_jalr;
     assign MemRW                  = type_xm == S_TYPE ? Addr[31:30] == 2'd00 && Addr[28]     : FALSE;
     assign IMemWE                 = type_xm == S_TYPE ? BIOS_mode && Addr[31:29] == 3'b001   : FALSE;
     assign UART_Write_valid       = type_xm == S_TYPE ? Addr == UART_TRANSMITTER_ADDR        : FALSE;

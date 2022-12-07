@@ -4,9 +4,7 @@ module w_logic #(
     input [W_SIZE-1:0] inst_w,
     input [W_SIZE-1:0] inst_fd, // Need to add inst_fd as an input in order to cover for jal special case calculate the pcSel.
     input [W_SIZE-1:0] Addr,  //ALU result
-    input BrTaken,
     input BIOSRest,
-    output Flush,
     output [1:0] PCSel, 
     output RegWEn, 
     output CSRWen,
@@ -94,7 +92,6 @@ module w_logic #(
     assign RegWEn = reg_write_enable;
     assign WBSel  = write_back_sel;
 
-    assign Flush  = BrTaken;
     assign CSRWen = opcode_w == CSR_OPCODE;      // NEEDS TO COVER CSR TO MAKE SURE IT IS THE CORRECT ADDRESS
 
 

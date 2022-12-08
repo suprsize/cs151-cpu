@@ -35,7 +35,7 @@ module bp_cache_tb();
         .hit1(hit1),
         .wa(wa),
         .din(din),
-        .we()
+        .we(we)
     );
 
     initial begin
@@ -51,6 +51,11 @@ module bp_cache_tb();
         ra0 = 32'h00000000;
         #(2);
         assert(hit0 == 1'b0); // compulsory miss
+
+        wa = 32'h00000000;
+        din = 2'b11;
+        we = 1'b1;
+        @posedge(clk); #1
 
         #(2);
         assert(hit0 == 1'b1); // cache hit

@@ -47,13 +47,13 @@ module bp_cache_tb();
             $vcdpluson;
             $vcdplusmemon;
         `endif
-    
-        ra0 = 32'h00000008;
+
+        ra0 = 32'h0000_0007;
         #(2);
         assert(hit0 == 1'b0); // compulsory miss
 
         // write
-        wa = 32'h00000008;
+        wa = 32'h0000_0007;
         din = 2'b11;
         we = 1'b1;
         @(posedge clk); #2;
@@ -65,7 +65,33 @@ module bp_cache_tb();
         @(posedge clk); #2;
 
         assert(hit0 == 1'b1); // cache hit
-        assert(dout0 == 2'b01); // eviction; updated data
+        assert(dout0 == 2'b01); // updated data due to second write
+
+        ra1 = 32'h0000_0001;
+        #(2);
+        assert(hit1 == 1'b0); // compulsory miss
+
+        // write
+        wa = 32'h0000_0001;
+        din = 2'b10;
+        we = 1'b1;
+        @(posedge clk); #2;
+
+        assert(hit1 == 1'b1); // cache hit
+        assert(dout1 == 2'b10); // correct data is read
+
+        ra1 = 32'h1111_0007;
+        #(2);
+        assert(hit1 == 1'b0); // cache miss bc different tag
+
+        // write 
+        wa = 32'h1111_0007;
+        din = 2'b00;
+        we = 1'b1;
+        @(posedge clk); #2;
+
+        assert(hit1 == 1'b1); // should be a hit
+        assert(dout1 == 2'b00); // eviction
         
         `ifndef IVERILOG
             $vcdplusoff;

@@ -89,8 +89,7 @@ module xm_logic #(
     assign ALUSel = alu_sel;
 
     assign BrSel                  = func3_xm;
-    //assign Flush                  = type_xm == B_TYPE? Br : is_jalr && (PC_FD != alu_result);
-    assign Flush                  = type_xm == B_TYPE? Br : is_jalr;
+    assign Flush                  = type_xm == B_TYPE? Br : is_jalr && (PC_FD != alu_result); // load, jalr > this sqns of instruction, jalr will not have the correct pc so need to flush.
     assign MemRW                  = type_xm == S_TYPE ? Addr[31:30] == 2'd00 && Addr[28]     : FALSE;
     assign IMemWE                 = type_xm == S_TYPE ? BIOS_mode && Addr[31:29] == 3'b001   : FALSE;
     assign UART_Write_valid       = type_xm == S_TYPE ? Addr == UART_TRANSMITTER_ADDR        : FALSE;

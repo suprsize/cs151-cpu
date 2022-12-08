@@ -533,6 +533,7 @@ assign fd_logic_pc_fd = pc_fd;
 assign xm_logic_inst_xm = real_inst_xm;
 assign xm_logic_addr = alu_result;
 assign xm_logic_pc_xm = pc_xm;
+assign xm_logic_pc_fd = pc_fd;
 assign xm_logic_branch_result = branch_result;
 
 assign w_logic_inst_w = inst_w;

@@ -1,4 +1,7 @@
 `timescale 1ns/1ns
+
+`define SECOND 1000000000
+`define MS 1000000
 `define CLK_PERIOD 8
 
 module bp_cache_tb();
@@ -44,17 +47,12 @@ module bp_cache_tb();
             $vcdpluson;
             $vcdplusmemon;
         `endif
-        
-        rst = 1;
-        @(posedge clk); #1;
-        rst = 0;
-
+    
         ra0 = 32'h00000000;
-        #1;
+        #(2);
         assert(hit0 == 1'b0); // compulsory miss
 
-        ra0 = 32'h00000000;
-        #1;
+        #(2);
         assert(hit0 == 1'b1); // cache hit
         
         `ifndef IVERILOG

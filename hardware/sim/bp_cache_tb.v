@@ -53,6 +53,7 @@ module bp_cache_tb();
         #1;
         assert(hit0 == 1'b0); // compulsory miss
 
+        ra0 = 32'h00000000;
         #1;
         assert(hit0 == 1'b1); // cache hit
         

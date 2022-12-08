@@ -48,17 +48,24 @@ module bp_cache_tb();
             $vcdplusmemon;
         `endif
     
-        ra0 = 32'h00000000;
+        ra0 = 32'h00000008;
         #(2);
         assert(hit0 == 1'b0); // compulsory miss
 
-        wa = 32'h00000000;
+        // write
+        wa = 32'h00000008;
         din = 2'b11;
         we = 1'b1;
         @(posedge clk); #2;
 
         assert(hit0 == 1'b1); // cache hit
         assert(dout0 == 2'b11); // correct data is read
+
+        din = 2'b01;
+        @(posedge clk); #2;
+
+        assert(hit0 == 1'b1); // cache hit
+        assert(dout0 == 2'b01); // eviction; updated data
         
         `ifndef IVERILOG
             $vcdplusoff;

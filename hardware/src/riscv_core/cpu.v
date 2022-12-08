@@ -230,7 +230,7 @@ module cpu #(
     wire BFrwd1;
     wire AFrwd2;
     wire BFrwd2;
-    Wire JalrFrwd;
+    wire JalrFrwd;
     forward_logic frwd_logic (
       .inst_fd(frwd_inst_fd),
       .inst_xm(frwd_inst_xm),
@@ -355,8 +355,7 @@ assign jalr_a = JalrFrwd? alu_result : a_updated_fd;
 
 always @(posedge clk) begin
 	if (rst) a <= 'd0;
-	else a <= a_updated_fd
-	
+	else a <= a_updated_fd;
 end  
 always @(posedge clk) begin
 	if (rst) b <= 'd0;

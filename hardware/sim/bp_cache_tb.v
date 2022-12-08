@@ -58,7 +58,7 @@ module bp_cache_tb();
         @(posedge clk); #2;
 
         assert(hit0 == 1'b1); // cache hit
-        assert(dout0 == 1'b11) // correct data is read
+        assert(dout0 == 1'b11); // correct data is read
         
         `ifndef IVERILOG
             $vcdplusoff;

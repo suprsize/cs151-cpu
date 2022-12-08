@@ -5,6 +5,7 @@ module w_logic #(
     input [W_SIZE-1:0] inst_fd, // Need to add inst_fd as an input in order to cover for jal special case calculate the pcSel.
     input [W_SIZE-1:0] Addr,  //ALU result
     input BIOSRest,
+    input br_pred_taken,
     output [1:0] PCSel, 
     output RegWEn, 
     output CSRWen,
@@ -27,8 +28,8 @@ module w_logic #(
 
     localparam
     PC_PLUS_4_P     = 2'd0,
-    JALR_SPECIAL_P  = 2'd1,
-    JAL_SPECIAL_P   = 2'd2,
+    RS1_PLUS_IMM_P  = 2'd1,
+    PC_PLUS_IMM_P   = 2'd2,
     BIOS_REST_P     = 2'd3;
 
     localparam
@@ -83,8 +84,8 @@ module w_logic #(
 
 
     wire [6:0] opcode_fd = inst_fd[6:0];
-    wire is_jal_special =  opcode_fd == JAL_OPCODE;
-    wire is_jalr = opcode_fd == JALR_OPCODE;
+    wire is_jal_spec =  opcode_fd == JAL_OPCODE;
+    wire is_jalr_spec = opcode_fd == JALR_OPCODE;
     wire is_bios_addr = Addr[31:28] == 4'b0100;
 
 
@@ -97,8 +98,8 @@ module w_logic #(
 
     always @(*) begin
       if (BIOSRest)               pc_sel = BIOS_REST_P;
-      else if (is_jal_special)    pc_sel = JAL_SPECIAL_P;
-      else if (is_jalr)           pc_sel = JALR_SPECIAL_P;
+      else if (is_jalr_spec)      pc_sel = RS1_PLUS_IMM_P;
+      else if (is_jal_spec || br_pred_taken)              pc_sel = PC_PLUS_IMM_P;
       else                        pc_sel = PC_PLUS_4_P;
     end
 

@@ -11,8 +11,8 @@ module cpu #(
 );
     localparam
     PC_PLUS_4_P     = 2'd0,
-    JALR_SPECIAL_P    = 2'd1,
-    JAL_SPECIAL_P   = 2'd2,
+    RS1_PLUS_IMM_P    = 2'd1,
+    PC_PLUS_IMM_P   = 2'd2,
     BIOS_REST_P     = 2'd3;
     localparam NOP 	= 32'h0000_0013; //addi X0, X0, 0
     localparam
@@ -29,6 +29,8 @@ module cpu #(
     BIOS_W          = 3'd5,
     CYC_COUNTER_W   = 3'd6,
     INST_COUNTER_W  = 3'd7;
+    localparam
+    B_OPCODE        = 7'h63;
 
 
     // BIOS Memory
@@ -258,6 +260,7 @@ module cpu #(
     wire [31:0] xm_logic_pc_xm;
     wire [31:0] xm_logic_pc_fd;
     wire xm_logic_branch_result; 
+    wire xm_log_br_pred_taken;
     wire ASel;
     wire BSel;
     wire [3:0] ALUSel;
@@ -274,6 +277,7 @@ module cpu #(
       .PC_XM(xm_logic_pc_xm),
       .PC_FD(xm_logic_pc_fd),
       .Br(xm_logic_branch_result),
+      .br_pred_taken_xm(xm_log_br_pred_taken),
       .ASel(ASel),
       .BSel(BSel),
       .ALUSel(ALUSel),
@@ -290,6 +294,7 @@ module cpu #(
     wire [31:0] w_logic_inst_fd;
     wire [31:0] w_logic_addr;
     wire w_logic_BIOSRest;
+    wire w_logic_br_pred_taken;
     wire [1:0] PCSel;
     wire RegWEn;
     wire CSRWen;
@@ -299,15 +304,34 @@ module cpu #(
       .inst_fd(w_logic_inst_fd),
       .Addr(w_logic_addr),
       .BIOSRest(w_logic_BIOSRest),
+      .br_pred_taken(w_logic_br_pred_taken),
       .PCSel(PCSel),
       .RegWEn(RegWEn),
       .CSRWen(CSRWen),
       .WBSel(WBSel)
     );
 
+    wire  [31:0] br_pred_pc_fd;
+    wire br_pred_is_br_fd;
+    wire  [31:0] br_pred_pc_xm;
+    wire br_pred_is_br_xm;
+    wire br_pred_br_taken_check;
+    wire br_pred_taken;
+    branch_predictor br_predictor (
+      .clk(clk),
+      .reset(rst),
+      .pc_guess(br_pred_pc_fd),
+      .is_br_guess(br_pred_is_br_fd),
+      .pc_check(br_pred_pc_xm),
+      .is_br_check(br_pred_is_br_xm),
+      .br_taken_check(br_pred_br_taken_check),
+      .br_pred_taken(br_pred_taken)
+    );
+
 
 reg [31:0] pc_fd, pc_xm, pc_w;
 reg [31:0] a, b, imm;
+reg br_pred_taken_xm;
 reg [31:0] inst_xm, inst_w;
 reg flush_w;
 reg [31:0] alu_result_w;
@@ -319,10 +343,10 @@ wire [31:0] jalr_a;
 reg [31:0] pc_wire_1;
 always @(*) begin
   case(PCSel)
-    PC_PLUS_4_P   : pc_wire_1 = pc_fd + 'd4;
-    JALR_SPECIAL_P  : pc_wire_1 = jalr_a + imm_result;
-    JAL_SPECIAL_P : pc_wire_1 = pc_fd + imm_result;
-    BIOS_REST_P   : pc_wire_1 = RESET_PC;
+    PC_PLUS_4_P     : pc_wire_1 = pc_fd + 'd4;
+    RS1_PLUS_IMM_P  : pc_wire_1 = jalr_a + imm_result;
+    PC_PLUS_IMM_P   : pc_wire_1 = pc_fd + imm_result;
+    BIOS_REST_P     : pc_wire_1 = RESET_PC;
   endcase
 end
 wire [31:0] pc_wire_2 = !Flush || rst? pc_wire_1 : alu_result;
@@ -374,6 +398,11 @@ always @(posedge clk) begin
   if(rst) inst_xm <= NOP;
   else inst_xm <= inst_fd;
 end 
+always @(posedge clk) begin
+  if(rst) br_pred_taken_xm <= 'd0;
+  else br_pred_taken_xm <= br_pred_taken;
+end 
+
 
 wire [31:0] real_inst_xm;
 assign real_inst_xm = flush_w? NOP : inst_xm;
@@ -535,10 +564,18 @@ assign xm_logic_addr = alu_result;
 assign xm_logic_pc_xm = pc_xm;
 assign xm_logic_pc_fd = pc_fd;
 assign xm_logic_branch_result = branch_result;
+assign xm_log_br_pred_taken = br_pred_taken_xm;
 
 assign w_logic_inst_w = inst_w;
 assign w_logic_inst_fd = inst_fd;
 assign w_logic_addr = alu_result_w;
 assign w_logic_BIOSRest = rst;
+assign w_logic_br_pred_taken = br_pred_taken;
+
+assign br_pred_pc_fd = pc_fd;
+assign br_pred_is_br_fd = opcode_fd == B_OPCODE;
+assign br_pred_pc_xm = pc_xm;
+assign br_pred_is_br_xm = opcode_xm == B_OPCODE;
+assign br_pred_br_taken_check = branch_result;
 
 endmodule

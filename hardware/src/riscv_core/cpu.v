@@ -11,7 +11,7 @@ module cpu #(
 );
     localparam
     PC_PLUS_4_P     = 2'd0,
-    ALU_OUTPUT_P    = 2'd1,
+    JALR_SPECIAL_P    = 2'd1,
     JAL_SPECIAL_P   = 2'd2,
     BIOS_REST_P     = 2'd3;
     localparam NOP 	= 32'h0000_0013; //addi X0, X0, 0
@@ -230,6 +230,7 @@ module cpu #(
     wire BFrwd1;
     wire AFrwd2;
     wire BFrwd2;
+    Wire JalrFrwd;
     forward_logic frwd_logic (
       .inst_fd(frwd_inst_fd),
       .inst_xm(frwd_inst_xm),
@@ -237,7 +238,8 @@ module cpu #(
       .AFrwd1(AFrwd1),
       .BFrwd1(BFrwd1),
       .AFrwd2(AFrwd2),
-      .BFrwd2(BFrwd2)
+      .BFrwd2(BFrwd2),
+      .JalrFrwd(JalrFrwd)
     );
 
     wire [31:0] fd_logic_inst_fd;
@@ -254,6 +256,7 @@ module cpu #(
     wire [31:0] xm_logic_inst_xm;
     wire [31:0] xm_logic_addr;
     wire [31:0] xm_logic_pc_xm;
+    wire [31:0] xm_logic_pc_fd;
     wire xm_logic_branch_result; 
     wire ASel;
     wire BSel;
@@ -269,6 +272,7 @@ module cpu #(
       .inst_xm(xm_logic_inst_xm),
       .Addr(xm_logic_addr),
       .PC_XM(xm_logic_pc_xm),
+      .PC_FD(xm_logic_pc_fd),
       .Br(xm_logic_branch_result),
       .ASel(ASel),
       .BSel(BSel),
@@ -311,11 +315,12 @@ reg [31:0] inst_counter, cycle_counter;
 reg [31:0] tohost_csr; //TODO
 
 
+wire [31:0] jalr_a;
 reg [31:0] pc_wire_1;
 always @(*) begin
   case(PCSel)
     PC_PLUS_4_P   : pc_wire_1 = pc_fd + 'd4;
-    ALU_OUTPUT_P  : pc_wire_1 = alu_result_w;
+    JALR_SPECIAL_P  : pc_wire_1 = jalr_a + imm_result;
     JAL_SPECIAL_P : pc_wire_1 = pc_fd + imm_result;
     BIOS_REST_P   : pc_wire_1 = RESET_PC;
   endcase
@@ -343,19 +348,19 @@ end
 
 wire [31:0] inst_fd = pc_fd[30]? bios_douta : imem_doutb;
 
+wire[31:0] a_updated_fd, b_updated_fd;
+assign a_updated_fd = AFrwd2? write_back_data : rd1;
+assign b_updated_fd = BFrwd2? write_back_data : rd2;
+assign jalr_a = JalrFrwd? alu_result : a_updated_fd;
+
 always @(posedge clk) begin
 	if (rst) a <= 'd0;
-	else begin
-	  if (AFrwd2) a <= write_back_data;
-	  else a <= rd1;
-	end
+	else a <= a_updated_fd
+	
 end  
 always @(posedge clk) begin
 	if (rst) b <= 'd0;
-	else begin
-	  if (BFrwd2) b <= write_back_data;
-	  else b <= rd2;
-	end
+	else b <= b_updated_fd;
 end 
 
 always @(posedge clk) begin
@@ -374,9 +379,9 @@ end
 wire [31:0] real_inst_xm;
 assign real_inst_xm = flush_w? NOP : inst_xm;
 
-wire[31:0] a_updated, b_updated;
-assign a_updated = AFrwd1? write_back_data : a;
-assign b_updated = BFrwd1? write_back_data : b;
+wire[31:0] a_updated_xm, b_updated_xm;
+assign a_updated_xm = AFrwd1? write_back_data : a;
+assign b_updated_xm = BFrwd1? write_back_data : b;
 
     wire [6:0] opcode_fd; 
     wire [4:0] rd_fd;
@@ -486,27 +491,27 @@ assign wd = write_back_data;
 
 assign uart_rx_data_out_ready = UART_Ready_To_Receive;
 
-assign uart_tx_data_in = b_updated[7:0];
+assign uart_tx_data_in = b_updated_xm[7:0];
 assign uart_tx_data_in_valid = UART_Write_valid;
 
-assign alu_a = ASel == PC_XM_A? pc_xm : a_updated;
-assign alu_b = BSel == IMM_B? imm : b_updated;
+assign alu_a = ASel == PC_XM_A? pc_xm : a_updated_xm;
+assign alu_b = BSel == IMM_B? imm : b_updated_xm;
 assign alu_sel = ALUSel;
 
 assign imm_inst = inst_fd;
 assign imm_sel = ImmSel;
 
-assign branch_a = a_updated;
-assign branch_b = b_updated;
+assign branch_a = a_updated_xm;
+assign branch_b = b_updated_xm;
 assign branch_sel = BrSel;
 
 
-assign imem_store_din = b_updated;
+assign imem_store_din = b_updated_xm;
 assign imem_store_addr = alu_result[15:0];
 assign imem_store_func3xm = func3_xm;
 assign imem_store_we = IMemWE;
 
-assign mem_store_din = b_updated;
+assign mem_store_din = b_updated_xm;
 assign mem_store_addr = alu_result[15:0];
 assign mem_store_func3xm = func3_xm;
 assign mem_store_we = MemRW;

@@ -27,7 +27,7 @@ module w_logic #(
 
     localparam
     PC_PLUS_4_P     = 2'd0,
-    ALU_OUTPUT_P    = 2'd1,
+    JALR_SPECIAL_P  = 2'd1,
     JAL_SPECIAL_P   = 2'd2,
     BIOS_REST_P     = 2'd3;
 
@@ -98,7 +98,7 @@ module w_logic #(
     always @(*) begin
       if (BIOSRest)               pc_sel = BIOS_REST_P;
       else if (is_jal_special)    pc_sel = JAL_SPECIAL_P;
-      // else if (is_jalr)           pc_sel = ALU_OUTPUT_P;
+      else if (is_jalr)           pc_sel = JALR_SPECIAL_P;
       else                        pc_sel = PC_PLUS_4_P;
     end
 

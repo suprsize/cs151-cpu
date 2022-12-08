@@ -3,7 +3,8 @@ module xm_logic #(
 ) (
     input [W_SIZE-1:0] inst_xm,
     input [W_SIZE-1:0] Addr,  //ALU result
-    input [W_SIZE-1:0] PC_XM, 
+    input [W_SIZE-1:0] PC_XM,
+    input [W_SIZE-1:0] PC_FD, 
     input Br,
     output ASel,
     output BSel,
@@ -78,6 +79,7 @@ module xm_logic #(
     wire is_jalr = opcode_xm == JALR_OPCODE;
     wire is_srai = type_xm == I_TYPE && SRA == {func7_xm[5], func3_xm};
     wire BIOS_mode = PC_XM[30];
+    wire alu_result = Addr;
 
     reg a_sel;
     reg b_sel;
@@ -87,7 +89,7 @@ module xm_logic #(
     assign ALUSel = alu_sel;
 
     assign BrSel                  = func3_xm;
-    assign Flush                  = type_xm == B_TYPE? Br : is_jalr;
+    assign Flush                  = type_xm == B_TYPE? Br : is_jalr && PC_FD != alu_result;
     assign MemRW                  = type_xm == S_TYPE ? Addr[31:30] == 2'd00 && Addr[28]     : FALSE;
     assign IMemWE                 = type_xm == S_TYPE ? BIOS_mode && Addr[31:29] == 3'b001   : FALSE;
     assign UART_Write_valid       = type_xm == S_TYPE ? Addr == UART_TRANSMITTER_ADDR        : FALSE;

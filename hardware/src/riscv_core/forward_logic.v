@@ -7,7 +7,8 @@ module forward_logic #(
     output AFrwd1, 
     output BFrwd1, 
     output BFrwd2,
-    output AFrwd2 
+    output AFrwd2,
+    output JalrFrwd 
 );
 
     localparam
@@ -67,27 +68,13 @@ module forward_logic #(
         .inst_type(type_w)
     );
 
-    wire write_back;
-    assign write_back = type_w != S_TYPE && type_w != B_TYPE && rd_w != 'd0;  //NEED TO MAKE SURE WRITE_BACK ALSO WORKS FOR CSR
+    wire write_back_w   = type_w != S_TYPE && type_w != B_TYPE && rd_w != 'd0;
+    wire write_back_xm  = type_xm != S_TYPE && type_xm != B_TYPE && rd_xm != 'd0;
 
-    reg a_forward_1, b_forward_1, a_forward_2, b_forward_2;
-    assign AFrwd1 = a_forward_1;
-    assign BFrwd1 = b_forward_1;
-    assign AFrwd2 = a_forward_2;
-    assign BFrwd2 = b_forward_2;
-
-    always @(*) begin
-      if (write_back) begin
-        a_forward_1 = rd_w == a_xm;
-        b_forward_1 = rd_w == b_xm;
-        a_forward_2 = rd_w == a_fd;
-        b_forward_2 = rd_w == b_fd;
-      end else begin
-        a_forward_1 = 1'd0;
-        b_forward_1 = 1'd0;
-        a_forward_2 = 1'd0;
-        b_forward_2 = 1'd0;
-      end
-    end
+    assign AFrwd1   = rd_w == a_xm && write_back_w;
+    assign BFrwd1   = rd_w == b_xm && write_back_w;
+    assign AFrwd2   = rd_w == a_fd && write_back_w;
+    assign BFrwd2   = rd_w == b_fd && write_back_w;
+    assign JalrFrwd = rd_xm == a_fd && write_back_xm;
 
 endmodule

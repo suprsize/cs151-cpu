@@ -55,7 +55,7 @@ module bp_cache_tb();
         wa = 32'h00000000;
         din = 2'b11;
         we = 1'b1;
-        @posedge(clk); #1
+        @(posedge clk); #2;
 
         #(2);
         assert(hit0 == 1'b1); // cache hit

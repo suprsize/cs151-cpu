@@ -112,9 +112,9 @@ module bp_cache #(
     wire [TAGWIDTH-1:0] tag_ra0 = ra0[AWIDTH-1:INDEXWIDTH];
     wire [TAGWIDTH-1:0] tag_ra1 = ra1[AWIDTH-1:INDEXWIDTH];
 
-    wire [TAGWIDTH-1:0] tag_buf0_1 = buf0[CACHEWIDTH-2:CACHEWIDTH-1-TAGWIDTH];
+    wire [TAGWIDTH-1:0] tag_buf0_1 = buf0[CACHEWIDTH-2:1+DWIDTH+TAGWIDTH+1+DWIDTH];
     wire [TAGWIDTH-1:0] tag_buf0_2 = buf0[TAGWIDTH+DWIDTH:1+DWIDTH];
-    wire [TAGWIDTH-1:0] tag_buf1_1 = buf1[CACHEWIDTH-2:CACHEWIDTH-1-TAGWIDTH];
+    wire [TAGWIDTH-1:0] tag_buf1_1 = buf1[CACHEWIDTH-2:1+DWIDTH+TAGWIDTH+1+DWIDTH];
     wire [TAGWIDTH-1:0] tag_buf1_2 = buf1[TAGWIDTH+DWIDTH:1+DWIDTH];
 
     wire valid_buf0_1 = buf0[1+DWIDTH+TAGWIDTH+DWIDTH];

@@ -9,7 +9,7 @@ module w_logic #(
     output [1:0] PCSel, 
     output RegWEn, 
     output CSRWen,
-    output [2:0] WBSel
+    output [3:0] WBSel
     );
 
 
@@ -33,20 +33,25 @@ module w_logic #(
     BIOS_REST_P     = 2'd3;
 
     localparam
-    PC_PLUS_4_W     = 3'd0,
-    ALU_OUTPUT_W    = 3'd1,
-    DMEM_W          = 3'd2,
-    UART_RECEIVER_W = 3'd3,
-    UART_CONTROL_W  = 3'd4,
-    BIOS_W          = 3'd5,
-    CYC_COUNTER_W   = 3'd6,
-    INST_COUNTER_W  = 3'd7;
+    PC_PLUS_4_W         = 4'd0,
+    ALU_OUTPUT_W        = 4'd1,
+    DMEM_W              = 4'd2,
+    UART_RECEIVER_W     = 4'd3,
+    UART_CONTROL_W      = 4'd4,
+    BIOS_W              = 4'd5,
+    CYC_COUNTER_W       = 4'd6,
+    INST_COUNTER_W      = 4'd7;
+    BR_COUNTER_W        = 4'd8,
+    CORR_BR_COUNTER_W   = 4'd9;
 
     localparam
-    UART_CONTROL_ADDR   = 32'h80000000,
-    UART_RECEIVER_ADDR  = 32'h80000004,
-    CYCLE_COUNTER_ADDR  = 32'h80000010,
-    INST_COUNTER_ADDR   = 32'h80000014;
+    UART_CONTROL_ADDR           = 32'h80000000,
+    UART_RECEIVER_ADDR          = 32'h80000004,
+    CYCLE_COUNTER_ADDR          = 32'h80000010,
+    INST_COUNTER_ADDR           = 32'h80000014,
+    TOTAL_BRANCH_COUNTER_ADDR   = 32'h8000001c,
+    CORRECT_BRANCH_COUNTER_ADDR = 32'h80000020;
+
 
     localparam
     I_OPCODE        = 7'h13,
@@ -79,7 +84,7 @@ module w_logic #(
     reg [1:0] pc_sel;
     reg reg_write_enable;
     reg [2:0] write_back_sel;
-    reg [2:0] load_result;      
+    reg [3:0] load_result;      
 
 
 
@@ -115,10 +120,12 @@ module w_logic #(
 
     always @(*) begin
       case (Addr)
-        UART_CONTROL_ADDR:  load_result = UART_CONTROL_W;
-        UART_RECEIVER_ADDR: load_result = UART_RECEIVER_W;
-        CYCLE_COUNTER_ADDR: load_result = CYC_COUNTER_W;
-        INST_COUNTER_ADDR:  load_result = INST_COUNTER_W;
+        UART_CONTROL_ADDR:            load_result = UART_CONTROL_W;
+        UART_RECEIVER_ADDR:           load_result = UART_RECEIVER_W;
+        CYCLE_COUNTER_ADDR:           load_result = CYC_COUNTER_W;
+        INST_COUNTER_ADDR:            load_result = INST_COUNTER_W;
+        TOTAL_BRANCH_COUNTER_ADDR:    load_result = BR_COUNTER_W;        
+        CORRECT_BRANCH_COUNTER_ADDR:  load_result = CORR_BR_COUNTER_W;   
         default: begin
           if (is_bios_addr) load_result = BIOS_W;
           else load_result = DMEM_W;

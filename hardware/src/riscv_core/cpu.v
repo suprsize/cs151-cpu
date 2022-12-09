@@ -21,14 +21,16 @@ module cpu #(
     PC_XM_A = 1'd1,
     IMM_B   = 1'd1;
     localparam
-    PC_PLUS_4_W     = 3'd0,
-    ALU_OUTPUT_W    = 3'd1,
-    DMEM_W          = 3'd2,
-    UART_RECEIVER_W = 3'd3,
-    UART_CONTROL_W  = 3'd4,
-    BIOS_W          = 3'd5,
-    CYC_COUNTER_W   = 3'd6,
-    INST_COUNTER_W  = 3'd7;
+    PC_PLUS_4_W         = 4'd0,
+    ALU_OUTPUT_W        = 4'd1,
+    DMEM_W              = 4'd2,
+    UART_RECEIVER_W     = 4'd3,
+    UART_CONTROL_W      = 4'd4,
+    BIOS_W              = 4'd5,
+    CYC_COUNTER_W       = 4'd6,
+    INST_COUNTER_W      = 4'd7;
+    BR_COUNTER_W        = 4'd8,
+    CORR_BR_COUNTER_W   = 4'd9;
     localparam
     B_OPCODE        = 7'h63;
 
@@ -267,6 +269,7 @@ module cpu #(
     wire [2:0] BrSel;       
     wire Flush;
     wire DoNotBranch;
+    wire CorrectBrPred;
     wire MemRW; 
     wire IMemWE;
     wire UART_Write_valid;
@@ -285,6 +288,7 @@ module cpu #(
       .BrSel(BrSel),       
       .Flush(Flush),
       .DoNotBranch(DoNotBranch),
+      .CorrectBrPred(CorrectBrPred),
       .MemRW(MemRW),
       .IMemWE(IMemWE),
       .UART_Write_valid(UART_Write_valid),
@@ -300,7 +304,7 @@ module cpu #(
     wire [1:0] PCSel;
     wire RegWEn;
     wire CSRWen;
-    wire [2:0] WBSel;
+    wire [3:0] WBSel;
     w_logic w_logic (
       .inst_w(w_logic_inst_w),
       .inst_fd(w_logic_inst_fd),
@@ -337,7 +341,7 @@ reg br_pred_taken_xm;
 reg [31:0] inst_xm, inst_w;
 reg flush_w;
 reg [31:0] alu_result_w;
-reg [31:0] inst_counter, cycle_counter;
+reg [31:0] inst_counter, cycle_counter, total_branch_counter, correct_branch_counter;
 reg [31:0] tohost_csr; //TODO
 
 
@@ -358,14 +362,16 @@ reg [31:0] write_back_data;
 
 always @(*) begin
   case(WBSel) 
-    PC_PLUS_4_W     : write_back_data = pc_w + 'd4;
-    ALU_OUTPUT_W    : write_back_data = alu_result_w;
-    DMEM_W          : write_back_data = load_result;
-    UART_RECEIVER_W : write_back_data = {24'b0, uart_rx_data_out};
-    UART_CONTROL_W  : write_back_data = {30'b0, uart_rx_data_out_valid, uart_tx_data_in_ready};
-    BIOS_W          : write_back_data = bios_load_result;
-    CYC_COUNTER_W   : write_back_data = cycle_counter;
-    INST_COUNTER_W  : write_back_data = inst_counter;
+    PC_PLUS_4_W       : write_back_data = pc_w + 'd4;
+    ALU_OUTPUT_W      : write_back_data = alu_result_w;
+    DMEM_W            : write_back_data = load_result;
+    UART_RECEIVER_W   : write_back_data = {24'b0, uart_rx_data_out};
+    UART_CONTROL_W    : write_back_data = {30'b0, uart_rx_data_out_valid, uart_tx_data_in_ready};
+    BIOS_W            : write_back_data = bios_load_result;
+    CYC_COUNTER_W     : write_back_data = cycle_counter;
+    INST_COUNTER_W    : write_back_data = inst_counter;
+    BR_COUNTER_W      : write_back_data = total_branch_counter;
+    CORR_BR_COUNTER_W : write_back_data = correct_branch_counter;
   endcase
 end 
 
@@ -496,6 +502,15 @@ always @(posedge clk) begin
   if(rst) inst_counter <= 'd0;
   else if (inst_w != NOP) inst_counter <= inst_counter + 'd1;
 end 
+always @(posedge clk) begin
+  if(rst) total_branch_counter <= 'd0;
+  else total_branch_counter <= total_branch_counter + opcode_xm == B_OPCODE;
+end 
+always @(posedge clk) begin
+  if(rst) correct_branch_counter <= 'd0;
+  else correct_branch_counter <= correct_branch_counter + CorrectBrPred;
+end 
+
 
 
 

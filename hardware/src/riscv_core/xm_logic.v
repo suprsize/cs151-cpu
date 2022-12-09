@@ -12,7 +12,8 @@ module xm_logic #(
     output [3:0] ALUSel,
     output [2:0] BrSel,       // Func3 of inst_xm
     output Flush,
-	output DoNotBranch,
+	  output DoNotBranch,
+    output CorrectBrPred,
     output MemRW, 
     output IMemWE,
     output UART_Write_valid,
@@ -95,7 +96,8 @@ module xm_logic #(
 
     assign BrSel                  = func3_xm;
     assign Flush                  = wrong_prediction || wrong_jalr_special; 
-	assign DoNotBranch = !Br && wrong_prediction;
+	  assign DoNotBranch            = !Br && wrong_prediction;
+    assign CorrectBrPred          = type_xm == B_TYPE && Br == br_pred_taken_xm;
     assign MemRW                  = type_xm == S_TYPE ? Addr[31:30] == 2'd00 && Addr[28]     : FALSE;
     assign IMemWE                 = type_xm == S_TYPE ? BIOS_mode && Addr[31:29] == 3'b001   : FALSE;
     assign UART_Write_valid       = type_xm == S_TYPE ? Addr == UART_TRANSMITTER_ADDR        : FALSE;

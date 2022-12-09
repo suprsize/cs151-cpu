@@ -30,6 +30,7 @@ module bp_cache #(
 
 );
 
+    /*
     // TODO: Your code
     
     // Using TIO model to build direct-mapped cache
@@ -83,5 +84,78 @@ module bp_cache #(
             end
         end    
     endgenerate
+    */
+
+    // Using TIO model to build direct-mapped cache
+    // No byte offset bits b/c data is just 2-bit saturating counter
+    localparam 
+    INDICES = LINES >> 1,
+    INDEXWIDTH = $clog2(INDICES),
+    TAGWIDTH = AWIDTH - INDEXWIDTH,
+    ONELINEWIDTH = TAGWIDTH + 1 + DWIDTH,
+    CACHEWIDTH = 1 + TAGWIDTH + 1 + DWIDTH + TAGWIDTH + 1 + DWIDTH; 
+    // each cache line will contain the fifo bit, and tag, valid bit, and data for two entries
+
+    reg [CACHEWIDTH-1:0] buffer [INDICES-1:0];
+
+    integer i; 
+    initial begin
+        for (i = 0; i < INDICES; i = i + 1) begin
+            buffer[i] = 'b0;
+        end
+    end
+
+    reg [CACHEWIDTH-1:0] buf0;
+    reg [CACHEWIDTH-1:0] buf1;
+
+    wire [TAGWIDTH-1:0] tag_ra0 = ra0[AWIDTH-1:INDEXWIDTH];
+    wire [TAGWIDTH-1:0] tag_ra1 = ra1[AWIDTH-1:INDEXWIDTH];
+
+    wire filo_bit0 = buf0[CACHEWIDTH-1];
+    wire filo_bit1 = buf1[CACHEWIDTH-1];
+
+    wire [TAGWIDTH-1:0] tag_buf0_1 = buf0[CACHEWIDTH-2:CACHEWIDTH-1-TAGWIDTH];
+    wire [TAGWIDTH-1:0] tag_buf0_2 = buf0[ONELINEWIDTH-1:1+DWIDTH];
+    wire [TAGWIDTH-1:0] tag_buf1_1 = buf1[CACHEWIDTH-2:CACHEWIDTH-1-TAGWIDTH];
+    wire [TAGWIDTH-1:0] tag_buf1_2 = buf1[ONELINEWIDTH-1:1+DWIDTH];
+
+    wire valid_buf0_1 = buf0[ONELINEWIDTH+DWIDTH];
+    wire valid_buf0_2 = buf0[DWIDTH];
+    wire valid_buf1_1 = buf1[ONELINEWIDTH+DWIDTH];
+    wire valid_buf1_2 = buf1[DWIDTH];
+
+    wire hit0_1 = tag_buf0_1 == tag_ra0 && valid_buf0_1;
+    wire hit0_2 = tag_buf0_2 == tag_ra0 && valid_buf0_2;
+    wire hit1_1 = tag_buf1_1 == tag_ra0 && valid_buf1_1;
+    wire hit1_2 = tag_buf1_2 == tag_ra0 && valid_buf1_2;
+
+    wire [DWIDTH-1:0] data_buf0_1 = buf0[CACHEWIDTH--TAGWIDTH:0];
+    wire [DWIDTH-1:0] data_buf0_2 = buf0[DWIDTH-1:0];
+    wire [DWIDTH-1:0] data_buf1 = buf1[DWIDTH-1:0];
+
+    assign dout0 = hit0 ? data_buf0 : 'b0;
+    assign dout1 = hit1 ? data_buf1 : 'b0;
+    assign hit0  = valid_buf0 && tag_buf0 == tag_ra0; // check tags are equal and valid bit on
+    assign hit1  = valid_buf1 && tag_buf1 == tag_ra1;
+
+    always @(*) begin
+        buf0 = buffer[ra0[INDEXWIDTH-1:0]];
+        buf1 = buffer[ra1[INDEXWIDTH-1:0]];
+
+    end
+
+
+    genvar i;
+    generate
+	    for (i = 0; i < LINES; i = i + 1) begin
+	        always @(posedge clk) begin
+		        if (reset) buffer[i] <= 'b0;
+		        else if (we && wa[INDEXWIDTH-1:0] == i) buffer[i] <= {wa[AWIDTH-1:INDEXWIDTH], 1'b1, din};
+		         
+            end
+        end    
+    endgenerate
+
+
 
 endmodule

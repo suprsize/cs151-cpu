@@ -179,6 +179,7 @@ module bp_cache #(
 							LRU1: buffer[i] <= second_entry_replaced;
 						endcase 
 					end
+				end
             end
         end    
     endgenerate

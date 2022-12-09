@@ -146,7 +146,7 @@ module bp_cache #(
 
     genvar i;
     generate
-	    for (i = 0; i < LINES; i = i + 1) begin
+	    for (i = 0; i < INDICES; i = i + 1) begin
 	        always @(posedge clk) begin
 		        if (reset) buffer[i] <= 'b0;
 		        else if (we && wa[INDEXWIDTH-1:0] == i) begin

@@ -99,10 +99,10 @@ module bp_cache #(
 
     reg [CACHEWIDTH-1:0] buffer [INDICES-1:0];
 
-    integer i; 
+    integer j; 
     initial begin
-        for (i = 0; i < INDICES; i = i + 1) begin
-            buffer[i] = 'b0;
+        for (j = 0; j < INDICES; j = j + 1) begin
+            buffer[j] = 'b0;
         end
     end
 
@@ -127,9 +127,9 @@ module bp_cache #(
     wire hit1_1 = (tag_buf1_1 == tag_ra1) && valid_buf1_1;
     wire hit1_2 = (tag_buf1_2 == tag_ra1) && valid_buf1_2;
 
-    wire [DWIDTH-1:0] data_buf0_1 = buf0[CACHEWIDTH-3-TAGWIDTH:CACHEWIDTH-3-TAGWIDTH-DWIDTH];
+    wire [DWIDTH-1:0] data_buf0_1 = buf0[TAGWIDTH+DWIDTH+DWIDTH:TAGWIDTH+1+DWIDTH];
     wire [DWIDTH-1:0] data_buf0_2 = buf0[DWIDTH-1:0];
-    wire [DWIDTH-1:0] data_buf1_1 = buf1[CACHEWIDTH-3-TAGWIDTH:CACHEWIDTH-3-TAGWIDTH-DWIDTH];
+    wire [DWIDTH-1:0] data_buf1_1 = buf1[TAGWIDTH+DWIDTH+DWIDTH:TAGWIDTH+1+DWIDTH];
     wire [DWIDTH-1:0] data_buf1_2 = buf1[DWIDTH-1:0];
 
     assign dout0 = hit0_1 ? data_buf0_1 : (hit0_2 ? data_buf0_2 : 'b0);
@@ -150,11 +150,11 @@ module bp_cache #(
 	        always @(posedge clk) begin
 		        if (reset) buffer[i] <= 'b0;
 		        else if (we && wa[INDEXWIDTH-1:0] == i) begin
-                    cacheline <= buffer[i];
-                    case (cacheline[CACHEWIDTH-1])
-                        LRU0: buffer[i] <= {1'b1, wa[AWIDTH-1:INDEXWIDTH], 1'b1, din, buffer[TAGWIDTH+DWIDTH:0]};
-                        LRU1: buffer[i] <= {1'b0, buffer[CACHEWIDTH-2:CACHEWIDTH-2-TAGWIDTH-DWIDTH], wa[AWIDTH-1:INDEXWIDTH], 1'b1, din};
-                        default: buffer[i] <= {1'b1, wa[AWIDTH-1:INDEXWIDTH], 1'b1, din, buffer[TAGWIDTH+DWIDTH:0]};
+                    cache_line <= buffer[i];
+                    case (cache_line[CACHEWIDTH-1])
+                        LRU0: buffer[i] <= {1'b1, wa[AWIDTH-1:INDEXWIDTH], 1'b1, din, cache_line[TAGWIDTH+DWIDTH:0]};
+                        LRU1: buffer[i] <= {1'b0, cache_line[CACHEWIDTH-2:CACHEWIDTH-2-TAGWIDTH-DWIDTH], wa[AWIDTH-1:INDEXWIDTH], 1'b1, din};
+                        default: buffer[i] <= {1'b1, wa[AWIDTH-1:INDEXWIDTH], 1'b1, din, cache_line[TAGWIDTH+DWIDTH:0]};
                     endcase 
                 end   
             end

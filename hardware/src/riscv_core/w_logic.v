@@ -40,7 +40,7 @@ module w_logic #(
     UART_CONTROL_W      = 4'd4,
     BIOS_W              = 4'd5,
     CYC_COUNTER_W       = 4'd6,
-    INST_COUNTER_W      = 4'd7;
+    INST_COUNTER_W      = 4'd7,
     BR_COUNTER_W        = 4'd8,
     CORR_BR_COUNTER_W   = 4'd9;
 
@@ -83,7 +83,7 @@ module w_logic #(
 
     reg [1:0] pc_sel;
     reg reg_write_enable;
-    reg [2:0] write_back_sel;
+    reg [3:0] write_back_sel;
     reg [3:0] load_result;      
 
 
@@ -135,7 +135,7 @@ module w_logic #(
 
     always @(*) begin
       case(opcode_w) 
-        LOAD_OPCODE: write_back_sel = load_result;
+        LOAD_OPCODE: 	write_back_sel = load_result;
         JAL_OPCODE,
         JALR_OPCODE:    write_back_sel = PC_PLUS_4_W;
         default:        write_back_sel = ALU_OUTPUT_W;

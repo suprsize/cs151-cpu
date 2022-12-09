@@ -28,7 +28,7 @@ module cpu #(
     UART_CONTROL_W      = 4'd4,
     BIOS_W              = 4'd5,
     CYC_COUNTER_W       = 4'd6,
-    INST_COUNTER_W      = 4'd7;
+    INST_COUNTER_W      = 4'd7,
     BR_COUNTER_W        = 4'd8,
     CORR_BR_COUNTER_W   = 4'd9;
     localparam
@@ -372,6 +372,7 @@ always @(*) begin
     INST_COUNTER_W    : write_back_data = inst_counter;
     BR_COUNTER_W      : write_back_data = total_branch_counter;
     CORR_BR_COUNTER_W : write_back_data = correct_branch_counter;
+    default			  : write_back_data = pc_w + 'd4;
   endcase
 end 
 
@@ -504,11 +505,11 @@ always @(posedge clk) begin
 end 
 always @(posedge clk) begin
   if(rst) total_branch_counter <= 'd0;
-  else total_branch_counter <= total_branch_counter + opcode_xm == B_OPCODE;
+  else total_branch_counter <= total_branch_counter + {31'd0, opcode_xm == B_OPCODE};
 end 
 always @(posedge clk) begin
   if(rst) correct_branch_counter <= 'd0;
-  else correct_branch_counter <= correct_branch_counter + CorrectBrPred;
+  else correct_branch_counter <= correct_branch_counter + {31'd0, CorrectBrPred};
 end 
 
 

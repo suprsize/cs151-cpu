@@ -142,6 +142,9 @@
       <a name="facing" val="north"/>
       <a name="label" val="CSRWen"/>
     </comp>
+    <comp lib="0" loc="(1170,2050)" name="Tunnel">
+      <a name="label" val="br_pred_taken"/>
+    </comp>
     <comp lib="0" loc="(1350,1680)" name="Tunnel">
       <a name="facing" val="north"/>
       <a name="label" val="AFrwd2"/>
@@ -198,6 +201,10 @@
     <comp lib="0" loc="(2720,740)" name="Constant">
       <a name="value" val="0x4"/>
       <a name="width" val="14"/>
+    </comp>
+    <comp lib="0" loc="(2760,1980)" name="Tunnel">
+      <a name="facing" val="east"/>
+      <a name="label" val="br_pred_taken"/>
     </comp>
     <comp lib="0" loc="(2980,1620)" name="Constant">
       <a name="facing" val="north"/>
@@ -286,6 +293,10 @@
       <a name="facing" val="north"/>
       <a name="label" val="IMemWE"/>
     </comp>
+    <comp lib="0" loc="(900,2100)" name="Tunnel">
+      <a name="facing" val="east"/>
+      <a name="label" val="BrTaken"/>
+    </comp>
     <comp lib="0" loc="(960,1220)" name="Pin">
       <a name="appearance" val="classic"/>
       <a name="label" val="PC_FD_30"/>
@@ -348,6 +359,10 @@
     <comp lib="4" loc="(1160,590)" name="Register">
       <a name="appearance" val="logisim_evolution"/>
       <a name="label" val="CSR_51E"/>
+      <a name="width" val="32"/>
+    </comp>
+    <comp lib="4" loc="(1390,1990)" name="Register">
+      <a name="appearance" val="logisim_evolution"/>
       <a name="width" val="32"/>
     </comp>
     <comp lib="4" loc="(1410,1050)" name="Register">
@@ -442,6 +457,7 @@
       <a name="text" val="A_wbe = must be store &amp;&amp; PC_XM[30] == 1 &amp;&amp; addr[31-29] == 001"/>
     </comp>
     <comp loc="(1160,1930)" name="FD_logic"/>
+    <comp loc="(1160,2020)" name="Branch_Pred_logic"/>
     <comp loc="(1300,1080)" name="Reg"/>
     <comp loc="(1300,1340)" name="immediate"/>
     <comp loc="(1880,1400)" name="Branch"/>
@@ -482,6 +498,9 @@
     <wire from="(1120,1670)" to="(1120,1680)"/>
     <wire from="(1150,640)" to="(1150,700)"/>
     <wire from="(1150,640)" to="(1160,640)"/>
+    <wire from="(1160,2020)" to="(1160,2050)"/>
+    <wire from="(1160,2020)" to="(1390,2020)"/>
+    <wire from="(1160,2050)" to="(1170,2050)"/>
     <wire from="(1300,1070)" to="(1300,1080)"/>
     <wire from="(1300,1070)" to="(1360,1070)"/>
     <wire from="(1300,1100)" to="(1320,1100)"/>
@@ -507,6 +526,7 @@
     <wire from="(1400,1670)" to="(1420,1670)"/>
     <wire from="(1400,560)" to="(1400,1080)"/>
     <wire from="(1420,1670)" to="(1420,1680)"/>
+    <wire from="(1450,2020)" to="(1690,2020)"/>
     <wire from="(1470,1080)" to="(1560,1080)"/>
     <wire from="(1470,1210)" to="(1560,1210)"/>
     <wire from="(1470,1340)" to="(1800,1340)"/>
@@ -630,6 +650,7 @@
     <wire from="(2710,1500)" to="(2910,1500)"/>
     <wire from="(2710,1580)" to="(2930,1580)"/>
     <wire from="(2720,740)" to="(2730,740)"/>
+    <wire from="(2760,1980)" to="(2780,1980)"/>
     <wire from="(2770,750)" to="(2790,750)"/>
     <wire from="(2790,1090)" to="(3060,1090)"/>
     <wire from="(2790,750)" to="(2790,1090)"/>
@@ -724,6 +745,7 @@
     <wire from="(690,1040)" to="(690,1060)"/>
     <wire from="(690,1040)" to="(910,1040)"/>
     <wire from="(900,1310)" to="(910,1310)"/>
+    <wire from="(900,2100)" to="(940,2100)"/>
     <wire from="(900,760)" to="(920,760)"/>
     <wire from="(900,910)" to="(920,910)"/>
     <wire from="(900,930)" to="(910,930)"/>
@@ -1185,6 +1207,10 @@
       <a name="appearance" val="NewPins"/>
       <a name="label" val="InstXm"/>
     </comp>
+    <comp lib="0" loc="(230,210)" name="Pin">
+      <a name="appearance" val="NewPins"/>
+      <a name="label" val="br_pred_taken_xm"/>
+    </comp>
     <comp lib="0" loc="(390,560)" name="Pin">
       <a name="appearance" val="NewPins"/>
       <a name="facing" val="west"/>
@@ -1245,6 +1271,10 @@
       <a name="appearance" val="NewPins"/>
       <a name="label" val="BIOSRest"/>
     </comp>
+    <comp lib="0" loc="(200,270)" name="Pin">
+      <a name="appearance" val="NewPins"/>
+      <a name="label" val="br_pred_taken"/>
+    </comp>
     <comp lib="0" loc="(200,90)" name="Pin">
       <a name="appearance" val="NewPins"/>
       <a name="label" val="InstW"/>
@@ -1267,6 +1297,38 @@
     <comp lib="0" loc="(460,70)" name="Pin">
       <a name="appearance" val="NewPins"/>
       <a name="label" val="PCSel"/>
+      <a name="output" val="true"/>
+    </comp>
+  </circuit>
+  <circuit name="Branch_Pred_logic">
+    <a name="appearance" val="logisim_evolution"/>
+    <a name="circuit" val="Branch_Pred_logic"/>
+    <a name="circuitnamedboxfixedsize" val="true"/>
+    <a name="simulationFrequency" val="1.0"/>
+    <comp lib="0" loc="(190,160)" name="Pin">
+      <a name="appearance" val="NewPins"/>
+      <a name="label" val="PC_FD"/>
+    </comp>
+    <comp lib="0" loc="(190,200)" name="Pin">
+      <a name="appearance" val="NewPins"/>
+      <a name="label" val="is_branch_fd"/>
+    </comp>
+    <comp lib="0" loc="(200,370)" name="Pin">
+      <a name="appearance" val="NewPins"/>
+      <a name="label" val="PC_XM"/>
+    </comp>
+    <comp lib="0" loc="(210,430)" name="Pin">
+      <a name="appearance" val="NewPins"/>
+      <a name="label" val="is_branch_xm"/>
+    </comp>
+    <comp lib="0" loc="(210,500)" name="Pin">
+      <a name="appearance" val="NewPins"/>
+      <a name="label" val="br_result"/>
+    </comp>
+    <comp lib="0" loc="(420,170)" name="Pin">
+      <a name="appearance" val="NewPins"/>
+      <a name="facing" val="west"/>
+      <a name="label" val="br_pred_taken"/>
       <a name="output" val="true"/>
     </comp>
   </circuit>

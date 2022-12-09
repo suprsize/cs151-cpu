@@ -92,8 +92,9 @@ module bp_cache #(
     INDICES = LINES >> 1,
     INDEXWIDTH = $clog2(INDICES),
     TAGWIDTH = AWIDTH - INDEXWIDTH,
-    ONELINEWIDTH = TAGWIDTH + 1 + DWIDTH,
-    CACHEWIDTH = 1 + TAGWIDTH + 1 + DWIDTH + TAGWIDTH + 1 + DWIDTH; 
+    CACHEWIDTH = 1 + TAGWIDTH + 1 + DWIDTH + TAGWIDTH + 1 + DWIDTH,
+    FIFO0 = 1'b0,
+    FIFO1 = 1'b1;
     // each cache line will contain the fifo bit, and tag, valid bit, and data for two entries
 
     reg [CACHEWIDTH-1:0] buffer [INDICES-1:0];
@@ -111,51 +112,52 @@ module bp_cache #(
     wire [TAGWIDTH-1:0] tag_ra0 = ra0[AWIDTH-1:INDEXWIDTH];
     wire [TAGWIDTH-1:0] tag_ra1 = ra1[AWIDTH-1:INDEXWIDTH];
 
-    wire filo_bit0 = buf0[CACHEWIDTH-1];
-    wire filo_bit1 = buf1[CACHEWIDTH-1];
-
     wire [TAGWIDTH-1:0] tag_buf0_1 = buf0[CACHEWIDTH-2:CACHEWIDTH-1-TAGWIDTH];
-    wire [TAGWIDTH-1:0] tag_buf0_2 = buf0[ONELINEWIDTH-1:1+DWIDTH];
+    wire [TAGWIDTH-1:0] tag_buf0_2 = buf0[TAGWIDTH+DWIDTH:1+DWIDTH];
     wire [TAGWIDTH-1:0] tag_buf1_1 = buf1[CACHEWIDTH-2:CACHEWIDTH-1-TAGWIDTH];
-    wire [TAGWIDTH-1:0] tag_buf1_2 = buf1[ONELINEWIDTH-1:1+DWIDTH];
+    wire [TAGWIDTH-1:0] tag_buf1_2 = buf1[TAGWIDTH+DWIDTH:1+DWIDTH];
 
-    wire valid_buf0_1 = buf0[ONELINEWIDTH+DWIDTH];
+    wire valid_buf0_1 = buf0[CACHEWIDTH-2-TAGWIDTH];
     wire valid_buf0_2 = buf0[DWIDTH];
-    wire valid_buf1_1 = buf1[ONELINEWIDTH+DWIDTH];
+    wire valid_buf1_1 = buf1[CACHEWIDTH-2-TAGWIDTH];
     wire valid_buf1_2 = buf1[DWIDTH];
 
-    wire hit0_1 = tag_buf0_1 == tag_ra0 && valid_buf0_1;
-    wire hit0_2 = tag_buf0_2 == tag_ra0 && valid_buf0_2;
-    wire hit1_1 = tag_buf1_1 == tag_ra0 && valid_buf1_1;
-    wire hit1_2 = tag_buf1_2 == tag_ra0 && valid_buf1_2;
+    wire hit0_1 = (tag_buf0_1 == tag_ra0) && valid_buf0_1;
+    wire hit0_2 = (tag_buf0_2 == tag_ra0) && valid_buf0_2;
+    wire hit1_1 = (tag_buf1_1 == tag_ra1) && valid_buf1_1;
+    wire hit1_2 = (tag_buf1_2 == tag_ra1) && valid_buf1_2;
 
-    wire [DWIDTH-1:0] data_buf0_1 = buf0[CACHEWIDTH--TAGWIDTH:0];
+    wire [DWIDTH-1:0] data_buf0_1 = buf0[CACHEWIDTH-3-TAGWIDTH:CACHEWIDTH-3-TAGWIDTH-DWIDTH];
     wire [DWIDTH-1:0] data_buf0_2 = buf0[DWIDTH-1:0];
-    wire [DWIDTH-1:0] data_buf1 = buf1[DWIDTH-1:0];
+    wire [DWIDTH-1:0] data_buf1_1 = buf1[CACHEWIDTH-3-TAGWIDTH:CACHEWIDTH-3-TAGWIDTH-DWIDTH];
+    wire [DWIDTH-1:0] data_buf1_2 = buf1[DWIDTH-1:0];
 
-    assign dout0 = hit0 ? data_buf0 : 'b0;
-    assign dout1 = hit1 ? data_buf1 : 'b0;
-    assign hit0  = valid_buf0 && tag_buf0 == tag_ra0; // check tags are equal and valid bit on
-    assign hit1  = valid_buf1 && tag_buf1 == tag_ra1;
+    assign dout0 = hit0_1 ? data_buf0_1 : (hit0_2 ? data_buf0_2 : 'b0);
+    assign dout1 = hit1_1 ? data_buf1_1 : (hit1_2 ? data_buf1_2 : 'b0);
+    assign hit0  = hit0_1 || hit0_2;
+    assign hit1  = hit1_1 || hit1_2;
 
     always @(*) begin
         buf0 = buffer[ra0[INDEXWIDTH-1:0]];
         buf1 = buffer[ra1[INDEXWIDTH-1:0]];
-
     end
 
+    reg [CACHEWIDTH-1:0] cache_line;
 
     genvar i;
     generate
 	    for (i = 0; i < LINES; i = i + 1) begin
 	        always @(posedge clk) begin
 		        if (reset) buffer[i] <= 'b0;
-		        else if (we && wa[INDEXWIDTH-1:0] == i) buffer[i] <= {wa[AWIDTH-1:INDEXWIDTH], 1'b1, din};
-		         
+		        else if (we && wa[INDEXWIDTH-1:0] == i) begin
+                    cacheline <= buffer[i];
+                    case (cacheline[CACHEWIDTH-1])
+                        FIFO0: buffer[i] <= {1'b1, wa[AWIDTH-1:INDEXWIDTH], 1'b1, din, buffer[TAGWIDTH+DWIDTH:0]};
+                        FIFO1: buffer[i] <= {1'b0, buffer[CACHEWIDTH-2:CACHEWIDTH-2-TAGWIDTH-DWIDTH], wa[AWIDTH-1:INDEXWIDTH], 1'b1, din};
+                        default: buffer[i] <= {1'b1, wa[AWIDTH-1:INDEXWIDTH], 1'b1, din, buffer[TAGWIDTH+DWIDTH:0]};
+                    endcase 
+                end   
             end
         end    
     endgenerate
-
-
-
 endmodule

@@ -89,8 +89,7 @@ module bp_cache #(
     // Using TIO model to build direct-mapped cache
     // No byte offset bits b/c data is just 2-bit saturating counter
     localparam 
-    INDICES = LINES,
-    INDEXWIDTH = $clog2(INDICES),
+    INDEXWIDTH = $clog2(LINES),
     TAGWIDTH = AWIDTH - INDEXWIDTH,
     ENTRYWIDTH = DWIDTH + TAGWIDTH + 1, //data-tag-valid
     CACHEWIDTH = 1 + (ENTRYWIDTH << 1), //fifo-entry2-entry1
@@ -98,11 +97,11 @@ module bp_cache #(
     LRU1 = 1'b1;
     // each cache line will contain the fifo bit, and tag, valid bit, and data for two entries
 
-    reg [CACHEWIDTH-1:0] buffer [INDICES-1:0];
+    reg [CACHEWIDTH-1:0] buffer [LINES-1:0];
 
     integer j; 
     initial begin
-        for (j = 0; j < INDICES; j = j + 1) begin
+        for (j = 0; j < LINES; j = j + 1) begin
             buffer[j] = 'b0;
         end
     end
@@ -144,44 +143,25 @@ module bp_cache #(
     assign hit0  = hit0_1 || hit0_2;
     assign hit1  = hit1_1 || hit1_2;
     
-    wire [INDEXWIDTH-1:0] index_wa = wa[INDEXWIDTH-1:0];
-    wire [TAGWIDTH-1:0] tag_wa = wa[AWIDTH-1:INDEXWIDTH];
-    wire [ENTRYWIDTH-1:0] new_entry = {din, tag_wa, 1'b1};
-    
-
-    reg [CACHEWIDTH-1:0] cache_line;
-    /*
-	wire [ENTRYWIDTH-1:0] entry_1 = cache_line[ENTRYWIDTH-1:0];
-	wire [ENTRYWIDTH-1:0] entry_2 = cache_line[CACHEWIDTH-2:ENTRYWIDTH];
-	wire fifo_flag = cache_line[CACHEWIDTH-1];
-	wire entry_v_1 = entry_1[0];
-	wire entry_v_2 = entry_2[0];
-	wire [TAGWIDTH-1:0] entry_tag_1 = entry_1[TAGWIDTH:1];
-	wire [TAGWIDTH-1:0] entry_tag_2 = entry_2[TAGWIDTH:1];
-	wire [DWIDTH-1:0] data_entry_1 = entry_1[ENTRYWIDTH-1:TAGWIDTH+1];
-	wire [DWIDTH-1:0] data_entry_2 = entry_2[ENTRYWIDTH-1:TAGWIDTH+1];
-	
-	wire e_hit_1 = (entry_tag_1 == tag_wa) && entry_v_1;
-	wire e_hit_2 = (entry_tag_2 == tag_wa) && entry_v_2;
-	wire [CACHEWIDTH-1:0] first_entry_replaced  = {!fifo_flag, entry_2, new_entry};
-	wire [CACHEWIDTH-1:0] second_entry_replaced = {!fifo_flag, new_entry, entry_1};
-    */
 
     genvar i;
     generate
-	    for (i = 0; i < INDICES; i = i + 1) begin
+	    for (i = 0; i < LINES; i = i + 1) begin
+            wire [CACHEWIDTH-1:0] out_cache_line;
+            split #(
+                .AWIDTH(AWIDTH),
+                .DWIDTH(DWIDTH),
+                .LINES(LINES)
+            ) split (
+                .cache_line(buffer[i]),
+                .wa(wa),
+                .din(din),
+                .out_cache_line(out_cache_line)
+            );
 	        always @(posedge clk) begin
 		        if (reset) buffer[i] <= 'b0;
 		        else if (we && index_wa == i) begin
-					cache_line = buffer[i];
-					if (cache_line[TAGWIDTH:1] == tag_wa && cache_line[0]) 		                                buffer[i] <= {!cache_line[CACHEWIDTH-1], cache_line[CACHEWIDTH-2:ENTRYWIDTH], new_entry};
-					else if (cache_line[ENTRYWIDTH+TAGWIDTH:ENTRYWIDTH+1] == tag_wa && cache_line[ENTRYWIDTH]) 	buffer[i] <= {!cache_line[CACHEWIDTH-1], new_entry, cache_line[ENTRYWIDTH-1:0]};
-					else begin
-						case (cache_line[CACHEWIDTH-1])
-							LRU0: buffer[i] <= {!cache_line[CACHEWIDTH-1], cache_line[CACHEWIDTH-2:ENTRYWIDTH], new_entry};
-							LRU1: buffer[i] <= {!cache_line[CACHEWIDTH-1], new_entry, cache_line[ENTRYWIDTH-1:0]};
-						endcase 
-					end
+					buffer[i] <= out_cache_line;
 				end
             end
         end    

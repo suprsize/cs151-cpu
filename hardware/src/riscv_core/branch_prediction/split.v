@@ -8,11 +8,11 @@ Outputs: data and cache hit (for each read port)
 module split #(
     parameter AWIDTH=32,  // Address bit width
     parameter DWIDTH=32,  // Data bit width
-    parameter LINES=128   // Number of cache lines
+    parameter LINES=128,   // Number of cache lines
     parameter INDEXWIDTH=$clog2(LINES),
     parameter TAGWIDTH=AWIDTH - INDEXWIDTH,
     parameter ENTRYWIDTH= DWIDTH + TAGWIDTH + 1,
-    parameter CACHEWIDTH= 1 + (ENTRYWIDTH << 1),
+    parameter CACHEWIDTH= 1 + (ENTRYWIDTH << 1)
 ) (
     input [CACHEWIDTH-1:0] cache_line,
     input [AWIDTH-1:0] wa,

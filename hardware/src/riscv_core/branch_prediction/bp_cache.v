@@ -160,7 +160,7 @@ module bp_cache #(
             );
 	        always @(posedge clk) begin
 		        if (reset) buffer[i] <= 'b0;
-		        else if (we && index_wa == i) begin
+		        else if (we && wa[INDEXWIDTH-1:0] == i) begin
 					buffer[i] <= out_cache_line;
 				end
             end

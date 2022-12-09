@@ -92,6 +92,22 @@ module bp_cache_tb();
 
         assert(hit1 == 1'b1); // should be a hit
         assert(dout1 == 2'b00); // eviction
+
+
+        assert(hit0 == 1'b0); // cache eviction miss
+        assert(dout0 != 2'b01); // different due to eviction.
+
+        @(posedge clk); #2;
+        rst = 1'b1;
+        @(posedge clk); #2;
+        rst = 1'b0;
+        @(posedge clk); #2;
+        assert(hit0 == 1'b0); //reset, invalidate all
+        assert(hit1 == 1'b0); //reset, invalidate all
+
+
+
+
         
         `ifndef IVERILOG
             $vcdplusoff;

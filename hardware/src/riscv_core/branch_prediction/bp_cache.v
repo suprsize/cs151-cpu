@@ -148,7 +148,9 @@ module bp_cache #(
     wire [TAGWIDTH-1:0] tag_wa = wa[AWIDTH-1:INDEXWIDTH];
     wire [ENTRYWIDTH-1:0] new_entry = {din, tag_wa, 1'b1};
     
+
     reg [CACHEWIDTH-1:0] cache_line;
+    /*
 	wire [ENTRYWIDTH-1:0] entry_1 = cache_line[ENTRYWIDTH-1:0];
 	wire [ENTRYWIDTH-1:0] entry_2 = cache_line[CACHEWIDTH-2:ENTRYWIDTH];
 	wire fifo_flag = cache_line[CACHEWIDTH-1];
@@ -163,6 +165,7 @@ module bp_cache #(
 	wire e_hit_2 = (entry_tag_2 == tag_wa) && entry_v_2;
 	wire [CACHEWIDTH-1:0] first_entry_replaced  = {!fifo_flag, entry_2, new_entry};
 	wire [CACHEWIDTH-1:0] second_entry_replaced = {!fifo_flag, new_entry, entry_1};
+    */
 
     genvar i;
     generate
@@ -171,12 +174,12 @@ module bp_cache #(
 		        if (reset) buffer[i] <= 'b0;
 		        else if (we && index_wa == i) begin
 					cache_line = buffer[i];
-					if (e_hit_1) 		buffer[i] <= first_entry_replaced;
-					else if (e_hit_2) 	buffer[i] <= second_entry_replaced;
+					if (cache_line[TAGWIDTH:1] == tag_wa && cache_line[0]) 		                                buffer[i] <= {!cache_line[CACHEWIDTH-1], cache_line[CACHEWIDTH-2:ENTRYWIDTH], new_entry};
+					else if (cache_line[ENTRYWIDTH+TAGWIDTH:ENTRYWIDTH+1] == tag_wa && cache_line[ENTRYWIDTH]) 	buffer[i] <= {!cache_line[CACHEWIDTH-1], new_entry, cache_line[ENTRYWIDTH-1:0]};
 					else begin
-						case (fifo_flag)
-							LRU0: buffer[i] <= first_entry_replaced;
-							LRU1: buffer[i] <= second_entry_replaced;
+						case (cache_line[CACHEWIDTH-1])
+							LRU0: buffer[i] <= {!cache_line[CACHEWIDTH-1], cache_line[CACHEWIDTH-2:ENTRYWIDTH], new_entry};;
+							LRU1: buffer[i] <= {!cache_line[CACHEWIDTH-1], new_entry, cache_line[ENTRYWIDTH-1:0]};
 						endcase 
 					end
 				end

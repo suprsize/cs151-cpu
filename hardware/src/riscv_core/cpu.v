@@ -322,7 +322,7 @@ module cpu #(
     wire  [31:0] br_pred_pc_xm;
     wire br_pred_is_br_xm;
     wire br_pred_br_taken_check;
-    wire br_pred_taken;
+    wire br_pred_result;
     branch_predictor br_predictor (
       .clk(clk),
       .reset(rst),
@@ -331,10 +331,10 @@ module cpu #(
       .pc_check(br_pred_pc_xm),
       .is_br_check(br_pred_is_br_xm),
       .br_taken_check(br_pred_br_taken_check),
-      .br_pred_taken(br_pred_taken)
+      .br_pred_taken(br_pred_result)
     );
 
-
+wire br_pred_taken = br_pred_result && bp_enable;
 reg [31:0] pc_fd, pc_xm, pc_w;
 reg [31:0] a, b, imm;
 reg br_pred_taken_xm;

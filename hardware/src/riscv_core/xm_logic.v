@@ -12,6 +12,7 @@ module xm_logic #(
     output [3:0] ALUSel,
     output [2:0] BrSel,       // Func3 of inst_xm
     output Flush,
+	output DoNotBranch,
     output MemRW, 
     output IMemWE,
     output UART_Write_valid,
@@ -77,10 +78,13 @@ module xm_logic #(
         .inst_type(type_xm)
     );
     
+	wire [W_SIZE-1:0] alu_result = Addr;
     wire is_jalr = opcode_xm == JALR_OPCODE;
+    wire wrong_jalr_special = is_jalr && (PC_FD != alu_result); // load, jalr > this sqns of instruction, jalr will not have the correct pc so need to flush.
     wire is_srai = type_xm == I_TYPE && SRA == {func7_xm[5], func3_xm};
     wire BIOS_mode = PC_XM[30];
-    wire  [W_SIZE-1:0] alu_result = Addr;
+    wire wrong_prediction = type_xm == B_TYPE && Br != br_pred_taken_xm;
+    
 
     reg a_sel;
     reg b_sel;
@@ -90,7 +94,8 @@ module xm_logic #(
     assign ALUSel = alu_sel;
 
     assign BrSel                  = func3_xm;
-    assign Flush                  = type_xm == B_TYPE? Br && !br_pred_taken_xm: is_jalr && (PC_FD != alu_result); // load, jalr > this sqns of instruction, jalr will not have the correct pc so need to flush.
+    assign Flush                  = wrong_prediction || wrong_jalr_special; 
+	assign DoNotBranch = !Br && wrong_prediction;
     assign MemRW                  = type_xm == S_TYPE ? Addr[31:30] == 2'd00 && Addr[28]     : FALSE;
     assign IMemWE                 = type_xm == S_TYPE ? BIOS_mode && Addr[31:29] == 3'b001   : FALSE;
     assign UART_Write_valid       = type_xm == S_TYPE ? Addr == UART_TRANSMITTER_ADDR        : FALSE;

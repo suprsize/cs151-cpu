@@ -266,6 +266,7 @@ module cpu #(
     wire [3:0] ALUSel;
     wire [2:0] BrSel;       
     wire Flush;
+    wire DoNotBranch;
     wire MemRW; 
     wire IMemWE;
     wire UART_Write_valid;
@@ -283,6 +284,7 @@ module cpu #(
       .ALUSel(ALUSel),
       .BrSel(BrSel),       
       .Flush(Flush),
+      .DoNotBranch(DoNotBranch),
       .MemRW(MemRW),
       .IMemWE(IMemWE),
       .UART_Write_valid(UART_Write_valid),
@@ -349,7 +351,8 @@ always @(*) begin
     BIOS_REST_P     : pc_wire_1 = RESET_PC;
   endcase
 end
-wire [31:0] pc_wire_2 = !Flush || rst? pc_wire_1 : alu_result;
+wire [31:0] flush_to_pc = DoNotBranch? pc_xm + 'd4: alu_result;
+wire [31:0] pc_wire_2 = !Flush || rst? pc_wire_1 : flush_to_pc;
 
 reg [31:0] write_back_data;
 

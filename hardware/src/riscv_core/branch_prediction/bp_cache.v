@@ -93,8 +93,8 @@ module bp_cache #(
     INDEXWIDTH = $clog2(INDICES),
     TAGWIDTH = AWIDTH - INDEXWIDTH,
     CACHEWIDTH = 1 + TAGWIDTH + 1 + DWIDTH + TAGWIDTH + 1 + DWIDTH,
-    FIFO0 = 1'b0,
-    FIFO1 = 1'b1;
+    LRU0 = 1'b0,
+    LRU1 = 1'b1;
     // each cache line will contain the fifo bit, and tag, valid bit, and data for two entries
 
     reg [CACHEWIDTH-1:0] buffer [INDICES-1:0];
@@ -152,8 +152,8 @@ module bp_cache #(
 		        else if (we && wa[INDEXWIDTH-1:0] == i) begin
                     cacheline <= buffer[i];
                     case (cacheline[CACHEWIDTH-1])
-                        FIFO0: buffer[i] <= {1'b1, wa[AWIDTH-1:INDEXWIDTH], 1'b1, din, buffer[TAGWIDTH+DWIDTH:0]};
-                        FIFO1: buffer[i] <= {1'b0, buffer[CACHEWIDTH-2:CACHEWIDTH-2-TAGWIDTH-DWIDTH], wa[AWIDTH-1:INDEXWIDTH], 1'b1, din};
+                        LRU0: buffer[i] <= {1'b1, wa[AWIDTH-1:INDEXWIDTH], 1'b1, din, buffer[TAGWIDTH+DWIDTH:0]};
+                        LRU1: buffer[i] <= {1'b0, buffer[CACHEWIDTH-2:CACHEWIDTH-2-TAGWIDTH-DWIDTH], wa[AWIDTH-1:INDEXWIDTH], 1'b1, din};
                         default: buffer[i] <= {1'b1, wa[AWIDTH-1:INDEXWIDTH], 1'b1, din, buffer[TAGWIDTH+DWIDTH:0]};
                     endcase 
                 end   

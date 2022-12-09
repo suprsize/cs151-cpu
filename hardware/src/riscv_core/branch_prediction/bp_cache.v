@@ -117,9 +117,9 @@ module bp_cache #(
     wire [TAGWIDTH-1:0] tag_buf1_1 = buf1[CACHEWIDTH-2:CACHEWIDTH-1-TAGWIDTH];
     wire [TAGWIDTH-1:0] tag_buf1_2 = buf1[TAGWIDTH+DWIDTH:1+DWIDTH];
 
-    wire valid_buf0_1 = buf0[CACHEWIDTH-2-TAGWIDTH];
+    wire valid_buf0_1 = buf0[1+DWIDTH+TAGWIDTH+DWIDTH];
     wire valid_buf0_2 = buf0[DWIDTH];
-    wire valid_buf1_1 = buf1[CACHEWIDTH-2-TAGWIDTH];
+    wire valid_buf1_1 = buf1[1+DWIDTH+TAGWIDTH+DWIDTH];
     wire valid_buf1_2 = buf1[DWIDTH];
 
     wire hit0_1 = (tag_buf0_1 == tag_ra0) && valid_buf0_1;

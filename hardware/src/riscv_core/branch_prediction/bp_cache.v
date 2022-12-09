@@ -153,7 +153,7 @@ module bp_cache #(
                     cache_line <= buffer[i];
                     case (cache_line[CACHEWIDTH-1])
                         LRU0: buffer[i] <= {1'b1, wa[AWIDTH-1:INDEXWIDTH], 1'b1, din, cache_line[TAGWIDTH+DWIDTH:0]};
-                        LRU1: buffer[i] <= {1'b0, cache_line[CACHEWIDTH-2:CACHEWIDTH-2-TAGWIDTH-DWIDTH], wa[AWIDTH-1:INDEXWIDTH], 1'b1, din};
+                        LRU1: buffer[i] <= {1'b0, cache_line[CACHEWIDTH-2:TAGWIDTH+1+DWIDTH], wa[AWIDTH-1:INDEXWIDTH], 1'b1, din};
                         default: buffer[i] <= {1'b1, wa[AWIDTH-1:INDEXWIDTH], 1'b1, din, cache_line[TAGWIDTH+DWIDTH:0]};
                     endcase 
                 end   

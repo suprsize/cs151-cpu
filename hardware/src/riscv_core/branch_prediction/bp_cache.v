@@ -178,7 +178,7 @@ module bp_cache #(
 					else if (cache_line[ENTRYWIDTH+TAGWIDTH:ENTRYWIDTH+1] == tag_wa && cache_line[ENTRYWIDTH]) 	buffer[i] <= {!cache_line[CACHEWIDTH-1], new_entry, cache_line[ENTRYWIDTH-1:0]};
 					else begin
 						case (cache_line[CACHEWIDTH-1])
-							LRU0: buffer[i] <= {!cache_line[CACHEWIDTH-1], cache_line[CACHEWIDTH-2:ENTRYWIDTH], new_entry};;
+							LRU0: buffer[i] <= {!cache_line[CACHEWIDTH-1], cache_line[CACHEWIDTH-2:ENTRYWIDTH], new_entry};
 							LRU1: buffer[i] <= {!cache_line[CACHEWIDTH-1], new_entry, cache_line[ENTRYWIDTH-1:0]};
 						endcase 
 					end

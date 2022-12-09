@@ -496,19 +496,19 @@ always @(posedge clk) begin
   
 end 
 always @(posedge clk) begin
-  if(rst) cycle_counter <= 'd0;
+  if(rst || ResetCounters) cycle_counter <= 'd0;
   else cycle_counter <= cycle_counter + 'd1;
 end 
 always @(posedge clk) begin
-  if(rst) inst_counter <= 'd0;
+  if(rst || ResetCounters) inst_counter <= 'd0;
   else if (inst_w != NOP) inst_counter <= inst_counter + 'd1;
 end 
 always @(posedge clk) begin
-  if(rst) total_branch_counter <= 'd0;
+  if(rst || ResetCounters) total_branch_counter <= 'd0;
   else total_branch_counter <= total_branch_counter + {31'd0, opcode_xm == B_OPCODE};
 end 
 always @(posedge clk) begin
-  if(rst) correct_branch_counter <= 'd0;
+  if(rst || ResetCounters) correct_branch_counter <= 'd0;
   else correct_branch_counter <= correct_branch_counter + {31'd0, CorrectBrPred};
 end 
 

@@ -72,15 +72,14 @@ module bp_cache #(
         buf1 = buffer[ra1[INDEXWIDTH-1:0]];
     end
 
-    always @(posedge clk) begin
-        if (we) buffer[wa[INDEXWIDTH-1:0]] <= {wa[AWIDTH-1:INDEXWIDTH], 1'b1, din};
-    end
 
     genvar i;
     generate
 	    for (i = 0; i < LINES; i = i + 1) begin
 	        always @(posedge clk) begin
 		        if (reset) buffer[i] <= 'b0;
+		        else if (we && wa[INDEXWIDTH-1:0] == i) buffer[i] <= {wa[AWIDTH-1:INDEXWIDTH], 1'b1, din};
+		         
             end
         end    
     endgenerate

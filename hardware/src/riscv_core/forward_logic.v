@@ -77,4 +77,6 @@ module forward_logic #(
     assign BFrwd2   = rd_w == b_fd && write_back_w;
     assign JalrFrwd = rd_xm == a_fd && write_back_xm;
 
+    
+
 endmodule

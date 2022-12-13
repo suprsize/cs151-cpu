@@ -32,6 +32,7 @@ module cpu #(
     BR_COUNTER_W        = 4'd8,
     CORR_BR_COUNTER_W   = 4'd9;
     localparam
+    CSR_OPCODE      = 7'h73,
     B_OPCODE        = 7'h63;
 
 
@@ -296,25 +297,35 @@ module cpu #(
       .ResetCounters(ResetCounters)
     );
 
-    wire [31:0] w_logic_inst_w; 
-    wire [31:0] w_logic_inst_fd;
-    wire [31:0] w_logic_addr;
-    wire w_logic_BIOSRest;
-    wire w_logic_br_pred_taken;
+    wire [6:0] m_logic_opcode_m,
+    wire [31:0] m_logic_addr;
+    wire [3:0] WBSel;
+    m_logic m_logic (
+      .opcode_m(m_logic_opcode_m),
+      .addr(m_logic_addr),
+      .WBSel(WBSel)
+    );
+
+    wire [6:0] f_logic_opcode_d,
+    wire f_logic_BIOSRest;
+    wire f_logic_br_pred_taken;
     wire [1:0] PCSel;
+    f_logic f_logic (
+      .opcode_d(f_logic_opcode_d),
+      .BIOSRest(f_logic_BIOSRest),
+      .br_pred_taken(f_logic_br_pred_taken),
+      .PCSel(PCSel)
+    );
+
+    wire [2:0] w_logic_type_w;
+    wire w_logic_is_csr_w;
     wire RegWEn;
     wire CSRWen;
-    wire [3:0] WBSel;
     w_logic w_logic (
-      .inst_w(w_logic_inst_w),
-      .inst_fd(w_logic_inst_fd),
-      .Addr(w_logic_addr),
-      .BIOSRest(w_logic_BIOSRest),
-      .br_pred_taken(w_logic_br_pred_taken),
-      .PCSel(PCSel),
+      .type_w(w_logic_type_w),
+      .is_csr_w(w_logic_is_csr_w),
       .RegWEn(RegWEn),
-      .CSRWen(CSRWen),
-      .WBSel(WBSel)
+      .CSRWen(CSRWen)
     );
 
     wire  [31:0] br_pred_pc_fd;
@@ -338,11 +349,12 @@ wire br_pred_taken = br_pred_result && bp_enable;
 reg [31:0] pc_fd, pc_xm, pc_w;
 reg [31:0] a, b, imm;
 reg br_pred_taken_xm;
-reg [31:0] inst_xm, inst_w;
+reg [31:0] inst_xm, inst_m, inst_w;
 reg flush_w;
 reg [31:0] alu_result_w;
 reg [31:0] inst_counter, cycle_counter, total_branch_counter, correct_branch_counter;
 reg [31:0] tohost_csr; //TODO
+reg [31:0] write_back_w;
 
 
 wire [31:0] jalr_a;
@@ -372,9 +384,14 @@ always @(*) begin
     INST_COUNTER_W    : write_back_data = inst_counter;
     BR_COUNTER_W      : write_back_data = total_branch_counter;
     CORR_BR_COUNTER_W : write_back_data = correct_branch_counter;
-    default			  : write_back_data = pc_w + 'd4;
+    default			      : write_back_data = pc_w + 'd4;
   endcase
 end 
+
+always @(posedge clk) begin
+  if (rst) write_back_w <= 'd0;
+  else write_back_w <= write_back_data;
+end
 
 always @(posedge clk) begin
   pc_fd <= pc_wire_2;
@@ -453,6 +470,22 @@ assign b_updated_xm = BFrwd1? write_back_data : b;
         .inst_type(type_xm)
     );
 
+    wire [6:0] opcode_m; 
+    wire [4:0] rd_m;
+    wire [2:0] func3_m;
+    wire [4:0] a_xm, b_m;
+    wire [6:0] func7_m;
+    wire [2:0] type_m;
+    inst_splitter m_split(
+        .inst(real_inst_m),
+        .opcode(opcode_m),
+        .rd(rd_m),
+        .func3(func3_m),
+        .rs1(a_xm), .rs2(b_m),
+        .func7(func7_m),
+        .inst_type(type_m)
+    );
+
     wire [6:0] opcode_w; 
     wire [4:0] rd_w;
     wire [2:0] func3_w;
@@ -482,10 +515,13 @@ always @(posedge clk) begin
   else flush_w <= Flush;
 end 
 always @(posedge clk) begin
-  if (rst) inst_w <= NOP;
-  else inst_w <= real_inst_xm;
+  if(rst) inst_m <= NOP;
+  else inst_m <= real_inst_xm;
 end 
-
+always @(posedge clk) begin
+  if (rst) inst_w <= NOP;
+  else inst_w <= inst_m;
+end 
 
 
 always @(posedge clk) begin
@@ -512,9 +548,6 @@ always @(posedge clk) begin
   else correct_branch_counter <= correct_branch_counter + {31'd0, CorrectBrPred};
 end 
 
-
-
-
 assign bios_addra = pc_wire_2[13:2];
 assign bios_addrb = alu_result[13:2];
 assign bios_ena = pc_wire_2[30]; //todo, don't know
@@ -534,7 +567,7 @@ assign we = RegWEn;
 assign ra1 = a_fd;
 assign ra2 = b_fd;
 assign wa = rd_w;
-assign wd = write_back_data;
+assign wd = write_back_w;
 
 assign uart_rx_data_out_ready = UART_Ready_To_Receive;
 
@@ -585,11 +618,15 @@ assign xm_logic_pc_fd = pc_fd;
 assign xm_logic_branch_result = branch_result;
 assign xm_log_br_pred_taken = br_pred_taken_xm;
 
-assign w_logic_inst_w = inst_w;
-assign w_logic_inst_fd = inst_fd;
-assign w_logic_addr = alu_result_w;
-assign w_logic_BIOSRest = rst;
-assign w_logic_br_pred_taken = br_pred_taken;
+assign w_logic_type_w = type_w;
+assign w_logic_is_csr_w = opcode_w == CSR_OPCODE;
+
+assign m_logic_addr = alu_result_w;
+assign m_logic_opcode_m = opcode_m;
+
+assign f_logic_opcode_d = opcode_fd; //should be d 
+assign f_logic_BIOSRest = rst;
+assign f_logic_br_pred_taken = br_pred_taken;
 
 assign br_pred_pc_fd = pc_fd;
 assign br_pred_is_br_fd = opcode_fd == B_OPCODE;
